@@ -1,0 +1,271 @@
+# Design System
+## StockStand — Visual Language & Component Rules
+
+---
+
+## 1. Aesthetic direction
+
+**Warm, tactile, and approachable** — like a summer afternoon at a real stand. Bold cartoon-ish characters and objects with a flat illustration style. Not childish (that alienates teens and adults) but not corporate. Think: Duolingo meets a farmer's market meets a Bloomberg terminal for the Explorer layer.
+
+**The one rule above all:** Junior mode = emoji, color, feeling. Explorer mode = same visual language, plus numbers, charts, and stock names. The design never changes — only the data density does.
+
+**What makes StockStand unforgettable:** It's the only "finance" product that feels like summer.
+
+---
+
+## 2. Color palette
+
+### Primary — Lemon Yellow
+| Token | Hex | Use |
+|---|---|---|
+| `--yellow` | `#F5C518` | Primary buttons, highlights, active states |
+| `--yellow-dark` | `#E6A800` | Button shadows, hover states |
+| `--yellow-light` | `#FFF8DC` | Background tints, selected states |
+
+### Semantic — Profit & Loss
+| Token | Hex | Use |
+|---|---|---|
+| `--green` | `#2ECC71` | Profit, positive events, open stand |
+| `--green-dark` | `#27AE60` | Green button shadows |
+| `--red` | `#E74C3C` | Loss, negative events, warnings |
+| `--red-dark` | `#C0392B` | Red button shadows |
+
+### Accent
+| Token | Hex | Use |
+|---|---|---|
+| `--blue` | `#3498DB` | Info states, Iced Tea product color |
+| `--purple` | `#9B59B6` | Market Cards panel, rare card rarity |
+| `--orange` | `#E67E22` | Cookies product color |
+
+### Neutral
+| Token | Hex | Use |
+|---|---|---|
+| `--bg` | `#FFFBF0` | Page background (warm white) |
+| `--card` | `#FFFFFF` | Card surfaces |
+| `--text` | `#2C2C2C` | Primary text |
+| `--muted` | `#888888` | Secondary text, labels |
+| `--border` | `#EEEEEE` | Card borders, dividers |
+
+---
+
+## 3. Typography
+
+| Role | Typeface | Size | Weight | Use |
+|---|---|---|---|---|
+| Stand name / hero | Fredoka One | 32–56px | 400 (display) | Logo, main title, CTAs |
+| UI headings | Nunito | 18–22px | 800 | Section headers, card titles |
+| Body / event text | Nunito | 13–16px | 400–600 | Descriptions, event copy |
+| Numbers / data | Nunito | 15–20px | 800 | Prices, coins, stats |
+| Micro labels | Nunito | 11–12px | 700 | Badges, tickers, tags |
+
+**Import:**
+```html
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+```
+
+**Rules:**
+- Fredoka One for anything that needs to feel fun and bold (logo, buttons, card panel title)
+- Nunito for everything else — it's friendly and highly legible for kids
+- Never use Inter, Roboto, or system fonts — they kill the summer-stand vibe
+- Minimum font size: 11px
+
+---
+
+## 4. Spacing & layout
+
+```
+Page padding:     28px (desktop), 16px (mobile)
+Card padding:     24px
+Card gap:         20px
+Border radius:    20px (cards), 12px (buttons/inputs), 100px (pills)
+Border width:     2px (cards), 2.5px (highlighted cards)
+```
+
+### Grid
+- Products: `repeat(auto-fit, minmax(280px, 1fr))`
+- Setup product picker: 2 columns fixed
+- Stats bar: flex row with `gap: 24px`
+
+---
+
+## 5. Components
+
+### Product card
+```
+┌─────────────────────────────────┐
+│ 🍋  Classic Lemonade            │  ← emoji (48px) + name (18px/800)
+│     AAPL · Apple Inc.           │  ← stock info (12px/600, muted)
+│     ▲ 1.2% today               │  ← move pill (green/red/gray)
+│                                 │
+│ Ingredient cost     $1.20 ↑    │  ← cost row
+│                                 │
+│ Your selling price   $2.50      │  ← price label
+│ ████████████░░░░░░░░░░░░░░░░   │  ← range slider
+│                                 │
+│ ████████████░░░░░  Margin 52%  │  ← margin bar (green/yellow/red)
+│                                 │
+│ 👦 👧 🧑 (animated customers)   │  ← customer area
+│                                 │
+│ Demand: 😄 😄 😄 😊 😐          │  ← demand faces
+│                                 │
+│ [  Sell 🍋 — collect $2.50  ]  │  ← sell button (green)
+└─────────────────────────────────┘
+```
+
+**States:**
+- Default: `border: 2.5px solid #EEE`
+- Selling well: `border-color: var(--green)`
+- Hurting: `border-color: var(--red)`
+- Hover: `transform: translateY(-3px)` + shadow
+
+### Market event banner
+```
+┌──────────────────────────────────────────────────────┐
+│ ☀️   Perfect weather!                                │
+│      It's a scorching hot day. Everyone wants        │
+│      a cold drink!                                   │
+│      [▲ Market up 3.0% · Ingredient costs stable]   │
+└──────────────────────────────────────────────────────┘
+```
+- Good event: `border: 2.5px solid var(--green)`
+- Bad event: `border: 2.5px solid var(--red)`
+- Neutral: `border: 2.5px solid var(--yellow)`
+- Slides in with `animation: slideDown 300ms ease-out`
+
+### Primary button (sell / start)
+```css
+background: var(--green);           /* or --yellow for setup */
+border-radius: 12px;
+box-shadow: 0 3px 0 var(--green-dark);
+font-family: 'Fredoka One', cursive;
+font-size: 15–20px;
+color: white;
+/* Hover: translateY(-1px), bigger shadow */
+/* Active: translateY(2px), smaller shadow */
+```
+
+### Stat pill (topbar)
+```css
+background: var(--yellow-light);
+border: 2px solid var(--yellow);
+border-radius: 100px;
+padding: 6px 16px;
+font-size: 15px; font-weight: 800;
+color: #5a3a00;
+/* Profit variant: green bg + green border */
+/* Loss variant: red bg + red border */
+```
+
+### Market card
+```
+┌─────────────────────────┐
+│ ⚖️  Supply & Demand  [common] │
+│                         │
+│ When something costs    │
+│ more to make, you need  │
+│ to charge more to       │
+│ profit...               │
+└─────────────────────────┘
+```
+- Common rarity: `background: #FFF8DC; color: #5a3a00`
+- Rare rarity: `background: #EEE8FF; color: #4a2a9a`
+- Locked state: `opacity: 0.4; filter: grayscale(1)`
+
+### Range slider
+```css
+appearance: none;
+height: 6px;
+border-radius: 3px;
+background: var(--border);
+
+/* Thumb */
+width: 22px; height: 22px;
+border-radius: 50%;
+background: var(--yellow);
+border: 3px solid white;
+box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+```
+
+### Margin bar
+- Width: `marginPct%` (0–100)
+- Color: green > 40%, yellow 15–40%, red < 15%
+- Height: 8px, border-radius: 4px
+- Animated: `transition: width 0.3s, background 0.3s`
+
+### Demand faces
+5 emoji faces at 20px, opacity 1 = active, opacity 0.2 = inactive:
+```
+Score 0.0–0.2: 😔 ○ ○ ○ ○
+Score 0.2–0.4: 😔 😐 ○ ○ ○
+Score 0.4–0.6: 😔 😐 🙂 ○ ○
+Score 0.6–0.8: 😔 😐 🙂 😊 ○
+Score 0.8–1.0: 😔 😐 🙂 😊 😄
+```
+
+### Timer ring
+SVG circle, `stroke-dasharray: 125.6` (2πr for r=20):
+- Full: `stroke-dashoffset: 0`
+- Empty: `stroke-dashoffset: 125.6`
+- Color: yellow normally, red when < 15 seconds
+- Smooth transition: `transition: stroke-dashoffset 0.5s`
+
+---
+
+## 6. Motion & animation
+
+| Animation | Duration | Easing | Trigger |
+|---|---|---|---|
+| Product card hover lift | 200ms | ease | Mouse enter |
+| Event banner slide in | 300ms | ease-out | New round |
+| Customer walk-in | 400ms | ease-out | Sell button |
+| Coin pop float | 800ms | ease-out | Sale complete |
+| Lesson popup appear | 400ms | ease | Card unlock |
+| Cards panel slide | 300ms | ease | Toggle button |
+| Margin bar width | 300ms | linear | Price change |
+
+**Rules:**
+- All animations use `transform` and `opacity` only (GPU-accelerated)
+- No autoplay sound — all audio must be opt-in
+- Respect `prefers-reduced-motion` — wrap all animations in the media query for v1.1
+
+---
+
+## 7. Accessibility
+
+- Minimum contrast: WCAG AA (4.5:1 for normal text, 3:1 for large text)
+- All interactive elements keyboard-navigable
+- Price slider: keyboard arrow key support (built into `<input type="range">`)
+- Market cards: readable by screen reader (text content only, no image-only info)
+- Color never used as the sole signal — always paired with text or icon
+- Tooltips on cost label explaining the stock connection
+
+---
+
+## 8. Responsive breakpoints
+
+| Breakpoint | Layout |
+|---|---|
+| > 1100px | 3-column product grid |
+| 700–1100px | 2-column product grid |
+| < 700px | 1-column, reduced padding |
+
+**Mobile note (v1.1):** Touch targets minimum 44×44px. Slider thumb enlarged to 28px on touch devices.
+
+---
+
+## 9. Dark mode
+
+Not in MVP scope. The warm yellow palette is intentionally light-mode-only for the launch. Dark mode planned for v1.2 using CSS custom properties already defined as variables.
+
+---
+
+## 10. Do's and don'ts
+
+| ✅ Do | ❌ Don't |
+|---|---|
+| Use Fredoka One for fun hero moments | Use system fonts anywhere |
+| Use emoji generously for product identity | Use clipart or stock icons |
+| Animate on sell — make it feel rewarding | Auto-play sound |
+| Show margin in color (green/yellow/red) | Show raw stock prices to under-13s (v1.1) |
+| Keep event copy kid-friendly and punchy | Use financial jargon in event banners |
+| Make the demand meter update instantly | Delay feedback — kids need instant response |
