@@ -1,0 +1,290 @@
+/* Onboarding.module.css */
+
+.container {
+  min-height: 100dvh;
+  background-color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--page-padding);
+  font-family: var(--font-nunito), sans-serif;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 32px var(--card-padding);
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Step dots ────────────────────────────────── */
+.steps {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.dotActive {
+  background: var(--yellow);
+  transform: scale(1.2);
+}
+
+/* ── Step content ─────────────────────────────── */
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.emoji {
+  font-size: 48px;
+  text-align: center;
+  line-height: 1;
+}
+
+.heading {
+  font-family: var(--font-fredoka), cursive;
+  font-size: 26px;
+  color: var(--text);
+  margin: 0;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.body {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.55;
+  text-align: center;
+  margin: 0;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+  margin: -4px 0 0;
+}
+
+/* ── Name input ───────────────────────────────── */
+.label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.input {
+  width: 100%;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 16px;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.input:focus {
+  border-color: var(--yellow);
+}
+
+.input::placeholder {
+  color: var(--muted);
+}
+
+/* ── Product picker ───────────────────────────── */
+.productGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.productBtn {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 16px 8px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-bounce);
+  font-family: var(--font-nunito), sans-serif;
+}
+
+.productBtn:hover,
+.productBtn:focus-visible {
+  border-color: var(--yellow);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.productChosen {
+  border-color: var(--green);
+  background-color: color-mix(in srgb, var(--green) 8%, var(--card));
+}
+
+.productEmoji {
+  font-size: 32px;
+  line-height: 1;
+}
+
+.productLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.checkmark {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 14px;
+  font-weight: 900;
+  color: var(--green);
+}
+
+/* ── Mode picker ──────────────────────────────── */
+.modeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.modeBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 20px 12px;
+  background: var(--bg);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    transform var(--transition-bounce);
+  font-family: var(--font-nunito), sans-serif;
+}
+
+.modeBtn:hover,
+.modeBtn:focus-visible {
+  border-color: var(--yellow);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.modeActive {
+  border-color: var(--yellow);
+  background-color: var(--yellow-light);
+}
+
+.modeEmoji {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.modeTitle {
+  font-family: var(--font-fredoka), cursive;
+  font-size: 18px;
+  color: var(--text);
+  font-weight: 400;
+}
+
+.modeDesc {
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ── Navigation ───────────────────────────────── */
+.navRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.btnPrimary {
+  flex: 1;
+  min-height: 48px;
+  background: var(--yellow);
+  color: var(--text);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-fredoka), cursive;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--yellow-dark);
+  transition: transform var(--transition-bounce), box-shadow var(--transition-fast);
+}
+
+.btnPrimary:hover,
+.btnPrimary:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--yellow-dark);
+  outline: none;
+}
+
+.btnPrimary:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--yellow-dark);
+}
+
+.btnPrimary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 3px 0 var(--yellow-dark);
+}
+
+.btnSecondary {
+  min-height: 48px;
+  padding: 0 20px;
+  background: transparent;
+  color: var(--muted);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.btnSecondary:hover,
+.btnSecondary:focus-visible {
+  color: var(--text);
+  border-color: var(--muted);
+  outline: none;
+}
+
+/* ── Disclaimer ───────────────────────────────── */
+.disclaimer {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+  line-height: 1.4;
+}

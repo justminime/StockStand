@@ -1,0 +1,114 @@
+/* AgeGate.module.css */
+
+.container {
+  min-height: 100vh;
+  background-color: var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--page-padding);
+  font-family: var(--font-nunito), sans-serif;
+}
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: var(--card-padding);
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.logo {
+  font-family: var(--font-fredoka), cursive;
+  font-size: 36px;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.heading {
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0;
+  text-align: center;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+}
+
+.btn {
+  width: 100%;
+  min-height: 80px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-fredoka), cursive;
+  font-size: 22px;
+  color: var(--card);
+  cursor: pointer;
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: transform var(--transition-bounce), box-shadow var(--transition-fast);
+  text-align: center;
+}
+
+.btnKid {
+  background-color: var(--yellow);
+  color: var(--text);
+  box-shadow: var(--shadow-btn-y);
+}
+
+.btnKid:hover,
+.btnKid:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--yellow-dark);
+  outline: none;
+}
+
+.btnKid:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--yellow-dark);
+}
+
+.btnTeen,
+.btnAdult {
+  background-color: var(--green);
+  box-shadow: var(--shadow-btn);
+}
+
+.btnTeen:hover,
+.btnTeen:focus-visible,
+.btnAdult:hover,
+.btnAdult:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--green-dark);
+  outline: none;
+}
+
+.btnTeen:active,
+.btnAdult:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 0 var(--green-dark);
+}
+
+.disclaimer {
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+  margin: 0;
+}

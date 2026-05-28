@@ -1,0 +1,275 @@
+/* ProductCard.module.css */
+
+.card {
+  background: var(--card);
+  border-radius: var(--radius-md);
+  padding: var(--card-padding);
+  border: var(--border-width-hi) solid var(--border);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: var(--font-nunito), sans-serif;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.cardWell {
+  border-color: var(--green);
+}
+
+.cardHurting {
+  border-color: var(--red);
+}
+
+/* Header */
+.header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.productEmoji {
+  font-size: 48px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.headerInfo {
+  flex: 1;
+  min-width: 0;
+}
+
+.productName {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text);
+  margin: 0 0 4px;
+  line-height: 1.2;
+}
+
+.stockRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.stockSymbol {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.changePill {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.pillUp {
+  background-color: color-mix(in srgb, var(--green) 15%, transparent);
+  color: var(--green-dark);
+}
+
+.pillDown {
+  background-color: color-mix(in srgb, var(--red) 15%, transparent);
+  color: var(--red-dark);
+}
+
+.pillNeutral {
+  background-color: color-mix(in srgb, var(--muted) 15%, transparent);
+  color: var(--muted);
+}
+
+/* Data rows */
+.dataRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.dataLabel {
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.dataValue {
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.costArrow {
+  font-size: 12px;
+  margin-left: 3px;
+}
+
+.arrowUp {
+  color: var(--red);
+}
+
+.arrowDown {
+  color: var(--green);
+}
+
+/* Slider */
+.sliderWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  cursor: pointer;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--yellow);
+  border: 3px solid var(--card);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--yellow);
+  border: 3px solid var(--card);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.slider:hover::-webkit-slider-thumb,
+.slider:focus-visible::-webkit-slider-thumb {
+  transform: scale(1.15);
+}
+
+.slider:focus-visible {
+  outline: 2px solid var(--yellow);
+  outline-offset: 4px;
+}
+
+/* Margin bar */
+.marginWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.marginLabel {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.marginTrack {
+  height: 8px;
+  background: var(--border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.marginFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease, background-color 0.3s ease;
+}
+
+.marginGreen {
+  background-color: var(--green);
+}
+
+.marginYellow {
+  background-color: var(--yellow);
+}
+
+.marginRed {
+  background-color: var(--red);
+}
+
+/* Demand faces */
+.demandSection {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.demandLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.demandFaces {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.demandFace {
+  font-size: 20px;
+  transition: opacity var(--transition-fast);
+}
+
+.faceActive {
+  opacity: 1;
+}
+
+.faceInactive {
+  opacity: 0.2;
+}
+
+.demandText {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.demandTextGood {
+  color: var(--green-dark);
+}
+
+.demandTextOk {
+  color: var(--yellow-dark);
+}
+
+.demandTextSlow {
+  color: var(--muted);
+}
+
+/* Disclaimer */
+.disclaimer {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+  margin: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--border);
+}

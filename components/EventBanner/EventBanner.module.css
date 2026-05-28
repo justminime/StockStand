@@ -1,0 +1,128 @@
+/* EventBanner.module.css */
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .banner,
+  .bannerExiting {
+    animation: none !important;
+  }
+}
+
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 16px 20px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  animation: slide-down var(--transition-slide) forwards;
+  position: relative;
+}
+
+.bannerExiting {
+  animation: slide-up var(--transition-slide) forwards;
+}
+
+.good {
+  background-color: color-mix(in srgb, var(--green) 12%, var(--card));
+  border-left: 3px solid var(--green);
+}
+
+.bad {
+  background-color: color-mix(in srgb, var(--red) 12%, var(--card));
+  border-left: 3px solid var(--red);
+}
+
+.neutral {
+  background-color: color-mix(in srgb, var(--yellow) 12%, var(--card));
+  border-left: 3px solid var(--yellow);
+}
+
+.emoji {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-nunito), sans-serif;
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 800;
+  font-family: var(--font-fredoka), cursive;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.message {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text);
+  margin: 0 0 8px;
+  line-height: 1.4;
+}
+
+.effect {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  margin: 0;
+}
+
+.effectUp {
+  color: var(--green-dark);
+}
+
+.effectDown {
+  color: var(--red-dark);
+}
+
+.dismiss {
+  background: none;
+  border: none;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+  flex-shrink: 0;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dismiss:hover,
+.dismiss:focus-visible {
+  color: var(--text);
+  background-color: var(--border);
+  outline: none;
+}
