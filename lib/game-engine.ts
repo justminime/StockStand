@@ -339,6 +339,7 @@ export function createInitialState(overrides?: Partial<GameState>): GameState {
     currentEvent:     null,
     onboardingDone:   false,
     soundEnabled:     false,
+    standTheme:       'street',
     lastSaved:        new Date().toISOString(),
   };
 

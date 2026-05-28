@@ -8,6 +8,7 @@
  * Wave 5 replaces the DB stubs with real /api/game-state calls.
  */
 import type { GameState } from '@/types/game';
+import { createInitialState } from '@/lib/game-engine';
 
 export const STORAGE_KEY    = 'stockstand_v1';
 export const SCHEMA_VERSION = 1;
@@ -24,7 +25,10 @@ export function loadFromStorage(): GameState | null {
       localStorage.removeItem(STORAGE_KEY);
       return null;
     }
-    return parsed;
+    // Forward-migrate: fill in any fields added after the save was created
+    // (new keys from createInitialState act as defaults; existing values win)
+    const defaults = createInitialState();
+    return { ...defaults, ...parsed };
   } catch (err) {
     console.error('[sync] Failed to load from localStorage:', err);
     return null;

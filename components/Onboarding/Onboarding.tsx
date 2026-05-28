@@ -15,7 +15,8 @@ interface OnboardingProps {
   }) => void;
 }
 
-const ALL_PRODUCTS: ProductId[] = ['lemonade', 'juice', 'cookies', 'tea', 'mystery'];
+// Mystery Sip (GME) is progression-locked — auto-unlocks at round 5, hidden here
+const ALL_PRODUCTS: ProductId[] = ['lemonade', 'juice', 'cookies', 'tea'];
 
 export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
   const [step, setStep]       = useState<1 | 2 | 3>(1);

@@ -1,0 +1,207 @@
+/* WinScreen.module.css */
+
+/* Full-screen overlay */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+  animation: fadeIn 0.25s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Card */
+.card {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  animation: slideUp 0.3s var(--transition-bounce) both;
+  max-height: 90dvh;
+  overflow-y: auto;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Trophy */
+.trophy {
+  font-size: 56px;
+  line-height: 1;
+  margin-bottom: 12px;
+  animation: trophyBounce 0.5s var(--transition-bounce) 0.2s both;
+}
+
+@keyframes trophyBounce {
+  from { transform: scale(0.5); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+
+/* Heading */
+.heading {
+  font-family: var(--font-fredoka), cursive;
+  font-size: 28px;
+  color: var(--text);
+  margin: 0 0 4px;
+}
+
+.standName {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 24px;
+  font-family: var(--font-nunito), sans-serif;
+}
+
+/* Stats grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.statValue {
+  font-family: var(--font-fredoka), cursive;
+  font-size: 22px;
+  color: var(--text);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-nunito), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.positive { color: var(--green); }
+.negative { color: var(--red);   }
+
+/* Best seller highlight */
+.highlight {
+  background: #FFF8E1;
+  border: 1.5px solid #FFE082;
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 14px;
+  font-family: var(--font-nunito), sans-serif;
+}
+
+/* Learning nugget */
+.lesson {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: var(--font-nunito), sans-serif;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--yellow);
+  text-align: left;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.btnPrimary {
+  background: var(--yellow);
+  color: var(--text);
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 12px 22px;
+  font-family: var(--font-fredoka), cursive;
+  font-size: 16px;
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+  flex: 1;
+  max-width: 160px;
+}
+
+.btnPrimary:hover,
+.btnPrimary:focus-visible {
+  filter: brightness(0.93);
+  outline: none;
+}
+
+.btnSecondary {
+  background: transparent;
+  color: var(--text);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 11px 18px;
+  font-family: var(--font-fredoka), cursive;
+  font-size: 15px;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+  flex: 1;
+  max-width: 160px;
+}
+
+.btnSecondary:hover,
+.btnSecondary:focus-visible {
+  background: var(--bg);
+  border-color: var(--text);
+  outline: none;
+}
+
+/* Goal hint */
+.goalHint {
+  font-size: 13px;
+  color: var(--muted);
+  font-family: var(--font-nunito), sans-serif;
+  margin-bottom: 10px;
+}
+
+/* Disclaimer */
+.disclaimer {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: var(--font-nunito), sans-serif;
+  line-height: 1.4;
+  margin: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay, .card, .trophy {
+    animation: none;
+  }
+}
