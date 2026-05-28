@@ -8,10 +8,11 @@ const SYMBOLS = ['AAPL', 'TSLA', 'MCD', 'KO', 'GME'] as const;
 type Prices = Record<string, number>;
 
 export function useStockPrices() {
-  const [prices,     setPrices]     = useState<Prices>({});
-  const [prevPrices, setPrevPrices] = useState<Prices>({});
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState<string | null>(null);
+  const [prices,        setPrices]       = useState<Prices>({});
+  const [prevPrices,    setPrevPrices]   = useState<Prices>({});
+  const [loading,       setLoading]      = useState(true);
+  const [error,         setError]        = useState<string | null>(null);
+  const [marketClosed,  setMarketClosed] = useState(false);
   const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastPricesRef = useRef<Prices>({});
 
@@ -19,7 +20,10 @@ export function useStockPrices() {
     try {
       const res = await fetch('/api/prices');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: Prices & { source?: string; timestamp?: string } = await res.json();
+      const data: Prices & { source?: string; market_closed?: boolean } = await res.json();
+
+      // Track market-closed flag from server (avoids client-side timezone logic)
+      setMarketClosed(data.market_closed === true);
 
       // Strip non-price fields
       const newPrices: Prices = {};
@@ -62,5 +66,5 @@ export function useStockPrices() {
     return (curr - prev) / prev;
   }, [prices, prevPrices]);
 
-  return { prices, prevPrices, loading, error, getStockDelta, refetch: fetchPrices };
+  return { prices, prevPrices, loading, error, marketClosed, getStockDelta, refetch: fetchPrices };
 }

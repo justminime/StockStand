@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createInitialState, simulateRound, MARKET_CARDS } from '@/lib/game-engine';
 import { loadFromStorage, saveToStorage, clearStorage } from '@/lib/sync';
-import type { GameState, ProductId, DisplayMode } from '@/types/game';
+import type { GameState, ProductId, DisplayMode, StandTheme } from '@/types/game';
 
 const SAVE_DEBOUNCE_MS = 500;
 
@@ -84,6 +84,24 @@ export function useGameState() {
     return newState.unlockedCards.filter(id => !prev.has(id));
   }, []);
 
+  /** Adds Mystery Sip (GME) to selectedProducts — called at round 5 */
+  const unlockMysteryProduct = useCallback(() => {
+    setState(prev => {
+      if (prev.selectedProducts.includes('mystery')) return prev;
+      return { ...prev, selectedProducts: [...prev.selectedProducts, 'mystery'] };
+    });
+  }, []);
+
+  /** Switches the stand background theme */
+  const setTheme = useCallback((theme: StandTheme) => {
+    setState(prev => ({ ...prev, standTheme: theme }));
+  }, []);
+
+  /** Switches goal/sandbox win condition (e.g. after reaching goal, continue in sandbox) */
+  const setWinCondition = useCallback((winCondition: 'goal' | 'sandbox') => {
+    setState(prev => ({ ...prev, winCondition }));
+  }, []);
+
   return {
     state,
     isLoaded,
@@ -94,6 +112,9 @@ export function useGameState() {
     completeOnboarding,
     resetGame,
     getNewlyUnlockedCards,
+    unlockMysteryProduct,
+    setTheme,
+    setWinCondition,
     MARKET_CARDS,
   };
 }

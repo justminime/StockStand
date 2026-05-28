@@ -4,6 +4,7 @@
 export type AgeTier     = 'child' | 'teen' | 'adult';
 export type DisplayMode = 'junior' | 'explorer';
 export type ProductId   = 'lemonade' | 'juice' | 'cookies' | 'tea' | 'mystery';
+export type StandTheme  = 'street' | 'beach' | 'park';
 
 export interface ProductState {
   price:       number;
@@ -70,5 +71,6 @@ export interface GameState {
   currentEvent:     GameEvent | null;
   onboardingDone:   boolean;
   soundEnabled:     boolean;
+  standTheme:       StandTheme;        // visual theme for the stand background
   lastSaved:        string;            // ISO timestamp
 }

@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useGameState } from '@/hooks/useGameState';
-import { useStockPrices } from '@/hooks/useStockPrices';
+import { useGameState }    from '@/hooks/useGameState';
+import { useStockPrices }  from '@/hooks/useStockPrices';
 import { PRODUCTS, MARKET_CARDS as ALL_MARKET_CARDS } from '@/lib/game-engine';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import StockTicker from '@/components/StockTicker/StockTicker';
@@ -11,6 +11,8 @@ import MarketCard  from '@/components/MarketCard/MarketCard';
 import ModeToggle  from '@/components/ModeToggle/ModeToggle';
 import StatsBar    from '@/components/StatsBar/StatsBar';
 import Timer       from '@/components/Timer/Timer';
+import GoalBar     from '@/components/GoalBar/GoalBar';
+import WinScreen   from '@/components/WinScreen/WinScreen';
 import type { GameEvent } from '@/types/game';
 import styles from './GameBoard.module.css';
 
@@ -20,6 +22,17 @@ const FALLBACK: Record<string, number> = {
 };
 
 const ROUND_SECONDS = 60;
+const GOAL_AMOUNT   = 100;
+
+// GME auto-unlock round
+const MYSTERY_UNLOCK_ROUND = 5;
+
+// Stand theme labels / emojis
+const THEMES = [
+  { id: 'street', emoji: '🏙️', label: 'Street' },
+  { id: 'beach',  emoji: '🏖️', label: 'Beach'  },
+  { id: 'park',   emoji: '🌳', label: 'Park'   },
+] as const;
 
 export default function GameBoard() {
   const {
@@ -29,6 +42,9 @@ export default function GameBoard() {
     setPrice,
     setDisplayMode,
     resetGame,
+    unlockMysteryProduct,
+    setTheme,
+    setWinCondition,
   } = useGameState();
 
   const {
@@ -36,17 +52,28 @@ export default function GameBoard() {
     prevPrices,
     loading: pricesLoading,
     error:   pricesError,
+    marketClosed,
     getStockDelta,
   } = useStockPrices();
 
   // Round lifecycle
-  const [roundKey,      setRoundKey]    = useState(0);    // increment → Timer remounts
+  const [roundKey,      setRoundKey]    = useState(0);
   const [timerPaused,   setPaused]      = useState(false);
   const [activeEvent,   setActiveEvent] = useState<GameEvent | null>(null);
   const [newCardIds,    setNewCardIds]  = useState<string[]>([]);
   const processingRef   = useRef(false);
   const prevRoundRef    = useRef<number>(0);
   const prevUnlockedRef = useRef<string[]>([]);
+
+  // Win / session-end screen
+  const [showWinScreen, setShowWinScreen] = useState(false);
+  const [winReason,     setWinReason]    = useState<'goal' | 'session-end'>('goal');
+
+  // Mystery Sip unlock toast
+  const [mysteryToast, setMysteryToast] = useState(false);
+
+  // Market-closed banner dismiss
+  const [closedDismissed, setClosedDismissed] = useState(false);
 
   // Sync refs once state is loaded from localStorage
   useEffect(() => {
@@ -69,11 +96,32 @@ export default function GameBoard() {
     if (fresh.length > 0)    setNewCardIds(fresh);
     if (state.currentEvent)  setActiveEvent(state.currentEvent);
 
+    // GME (Mystery Sip) auto-unlock at round MYSTERY_UNLOCK_ROUND
+    if (
+      state.round >= MYSTERY_UNLOCK_ROUND &&
+      !state.selectedProducts.includes('mystery')
+    ) {
+      unlockMysteryProduct();
+      setMysteryToast(true);
+      setTimeout(() => setMysteryToast(false), 5_000);
+    }
+
     // Reset processing guard and restart timer
     processingRef.current = false;
     setPaused(false);
     setRoundKey(k => k + 1);
-  }, [state.round, state.currentEvent, state.unlockedCards, isLoaded]);
+  }, [state.round, state.currentEvent, state.unlockedCards, state.selectedProducts, isLoaded, unlockMysteryProduct]);
+
+  // Win detection — goal mode: trigger WinScreen when coins cross threshold
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (showWinScreen) return; // already showing
+    if (state.winCondition === 'goal' && state.coins >= GOAL_AMOUNT) {
+      setPaused(true); // pause the timer
+      setWinReason('goal');
+      setShowWinScreen(true);
+    }
+  }, [state.coins, state.winCondition, isLoaded, showWinScreen]);
 
   /** Called when the round timer hits zero */
   const handleRoundEnd = useCallback(() => {
@@ -85,14 +133,46 @@ export default function GameBoard() {
     runRound(currentPrices);
   }, [prices, runRound]);
 
+  const handleEndSession = useCallback(() => {
+    setPaused(true);
+    setWinReason('session-end');
+    setShowWinScreen(true);
+  }, []);
+
+  const handleKeepPlaying = useCallback(() => {
+    if (winReason === 'goal') {
+      setWinCondition('sandbox'); // continue in sandbox after reaching goal
+    }
+    setShowWinScreen(false);
+    setPaused(false);
+  }, [winReason, setWinCondition]);
+
+  const handlePlayAgain = useCallback(() => {
+    setShowWinScreen(false);
+    resetGame();
+  }, [resetGame]);
+
   if (!isLoaded) return null;
 
   const { displayMode: mode } = state;
-  const unlockedSet  = new Set(state.unlockedCards);
+  const unlockedSet   = new Set(state.unlockedCards);
   const unlockedCards = ALL_MARKET_CARDS.filter(c => unlockedSet.has(c.id));
+  const theme         = state.standTheme ?? 'street';
+
+  const showClosedBanner = marketClosed && !closedDismissed;
 
   return (
-    <div className={styles.layout}>
+    <div className={styles.layout} data-theme={theme}>
+
+      {/* ── Win Screen overlay ───────────────────────── */}
+      {showWinScreen && (
+        <WinScreen
+          state={state}
+          reason={winReason}
+          onPlayAgain={handlePlayAgain}
+          onKeepPlaying={handleKeepPlaying}
+        />
+      )}
 
       {/* ── Sticky Header ───────────────────────────── */}
       <header className={styles.header}>
@@ -116,6 +196,26 @@ export default function GameBoard() {
           <ModeToggle mode={mode} onChange={setDisplayMode} />
         </div>
       </header>
+
+      {/* ── Goal progress bar (goal mode only) ──────── */}
+      {state.winCondition === 'goal' && (
+        <GoalBar coins={state.coins} goal={GOAL_AMOUNT} />
+      )}
+
+      {/* ── Market-closed banner ─────────────────────── */}
+      {showClosedBanner && (
+        <div className={styles.closedBanner} role="status">
+          <span aria-hidden="true">🔔</span>
+          <span>NYSE is closed right now — prices are from the last trading session.</span>
+          <button
+            className={styles.closedDismiss}
+            onClick={() => setClosedDismissed(true)}
+            aria-label="Dismiss market closed notice"
+          >
+            ✕
+          </button>
+        </div>
+      )}
 
       {/* ── Stock Ticker (Explorer only) ─────────────── */}
       {mode === 'explorer' && Object.keys(prices).length > 0 && (
@@ -172,7 +272,7 @@ export default function GameBoard() {
       )}
 
       {/* ── New card unlocked toast ───────────────────── */}
-      {newCardIds.length > 0 && (
+      {newCardIds.length > 0 && !mysteryToast && (
         <div
           className={styles.toast}
           role="status"
@@ -183,13 +283,48 @@ export default function GameBoard() {
         </div>
       )}
 
-      {/* ── Reset link (small, accessible) ──────────── */}
-      <div className={styles.resetRow}>
+      {/* ── Mystery Sip unlock toast ──────────────────── */}
+      {mysteryToast && (
+        <div
+          className={`${styles.toast} ${styles.toastMystery}`}
+          role="status"
+          aria-live="polite"
+          onClick={() => setMysteryToast(false)}
+        >
+          ⭐ Mystery Sip unlocked! The wild card is now in play.
+        </div>
+      )}
+
+      {/* ── Settings row: theme + end session ────────── */}
+      <div className={styles.settingsRow}>
+
+        {/* Stand theme picker */}
+        <div className={styles.themePicker} role="group" aria-label="Stand theme">
+          {THEMES.map(t => (
+            <button
+              key={t.id}
+              className={`${styles.themeBtn} ${theme === t.id ? styles.themeBtnActive : ''}`}
+              onClick={() => setTheme(t.id)}
+              aria-label={`${t.label} theme`}
+              aria-pressed={theme === t.id}
+              title={t.label}
+            >
+              {t.emoji}
+            </button>
+          ))}
+        </div>
+
+        {/* End session */}
+        <button className={styles.endSessionBtn} onClick={handleEndSession}>
+          🏁 End session
+        </button>
+
+        {/* Reset */}
         <button
           className={styles.resetBtn}
           onClick={() => { if (confirm('Reset game? All progress will be lost.')) resetGame(); }}
         >
-          ↩ Reset game
+          ↩ Reset
         </button>
       </div>
 

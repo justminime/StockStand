@@ -1,11 +1,25 @@
 /* GameBoard.module.css */
 
+/* ── Layout root + themes ─────────────────────── */
 .layout {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
   background: var(--bg);
   font-family: var(--font-nunito), sans-serif;
+  transition: background 0.3s ease;
+}
+
+/* Beach theme */
+.layout[data-theme="beach"] {
+  --bg:   #FFF8E1;
+  --card: #FFFDE7;
+}
+
+/* Park theme */
+.layout[data-theme="park"] {
+  --bg:   #F0FFF4;
+  --card: #F1FFF5;
 }
 
 /* ── Header ────────────────────────────────────── */
@@ -59,11 +73,52 @@
   white-space: nowrap;
 }
 
+/* ── Market-closed banner ──────────────────────── */
+.closedBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px var(--page-padding);
+  background: #FFF8E1;
+  border-bottom: 1px solid #FFE082;
+  font-size: 13px;
+  color: #795548;
+  font-family: var(--font-nunito), sans-serif;
+}
+
+.closedBanner span:first-child {
+  flex-shrink: 0;
+}
+
+.closedBanner span:nth-child(2) {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.closedDismiss {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #9E9E9E;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color var(--transition-fast);
+}
+
+.closedDismiss:hover,
+.closedDismiss:focus-visible {
+  color: var(--text);
+  outline: none;
+}
+
 /* ── Event banner slot ─────────────────────────── */
 .bannerSlot {
   padding: 0 var(--page-padding);
   padding-top: 12px;
-  min-height: 0; /* collapses when empty */
+  min-height: 0;
 }
 
 /* ── Round info row ────────────────────────────── */
@@ -124,7 +179,7 @@
   width: 220px;
 }
 
-/* ── New card toast ────────────────────────────── */
+/* ── Toast notifications ────────────────────────── */
 .toast {
   position: fixed;
   bottom: 110px;
@@ -143,6 +198,12 @@
   animation: bounceIn var(--transition-bounce) both;
 }
 
+/* Mystery Sip unlock — purple accent */
+.toastMystery {
+  background: #9C27B0;
+  color: #FFFFFF;
+}
+
 @keyframes bounceIn {
   from {
     opacity: 0;
@@ -154,13 +215,72 @@
   }
 }
 
-/* ── Reset link ────────────────────────────────── */
-.resetRow {
+/* ── Settings row ──────────────────────────────── */
+.settingsRow {
   display: flex;
-  justify-content: center;
-  padding: 4px var(--page-padding) 12px;
+  align-items: center;
+  gap: 12px;
+  padding: 8px var(--page-padding) 10px;
+  flex-wrap: wrap;
 }
 
+/* Theme picker */
+.themePicker {
+  display: flex;
+  gap: 4px;
+  margin-right: auto; /* push other items to the right */
+}
+
+.themeBtn {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  width: 36px;
+  height: 36px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.themeBtn:hover,
+.themeBtn:focus-visible {
+  border-color: var(--text);
+  outline: none;
+  background: var(--bg);
+}
+
+.themeBtnActive {
+  border-color: var(--yellow);
+  background: #FFFDE7;
+  box-shadow: 0 0 0 2px var(--yellow);
+}
+
+/* End session button */
+.endSessionBtn {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 7px 14px;
+  font-size: 13px;
+  font-family: var(--font-nunito), sans-serif;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  white-space: nowrap;
+}
+
+.endSessionBtn:hover,
+.endSessionBtn:focus-visible {
+  border-color: var(--text);
+  background: var(--bg);
+  outline: none;
+}
+
+/* Reset button */
 .resetBtn {
   background: none;
   border: none;
@@ -191,5 +311,9 @@
 
   .header {
     padding: 12px var(--page-padding-sm);
+  }
+
+  .settingsRow {
+    flex-wrap: wrap;
   }
 }

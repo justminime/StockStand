@@ -1,0 +1,66 @@
+/* GoalBar.module.css */
+
+.wrap {
+  padding: 10px var(--page-padding);
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.emoji {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.text {
+  font-size: 13px;
+  font-family: var(--font-nunito), sans-serif;
+  color: var(--text);
+  flex: 1;
+}
+
+.pct {
+  font-family: var(--font-fredoka), cursive;
+  font-size: 14px;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+/* Track */
+.track {
+  height: 8px;
+  background: var(--border);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+/* Fill — default yellow */
+.fill {
+  height: 100%;
+  background: var(--yellow);
+  border-radius: var(--radius-pill);
+  transition: width 0.4s ease;
+}
+
+/* >75% — warm orange approaching the goal */
+.fillNear {
+  background: #F5A623;
+}
+
+/* 100% — green celebration */
+.fillDone {
+  background: var(--green);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fill {
+    transition: none;
+  }
+}
