@@ -10,6 +10,9 @@
 import type { GameState } from '@/types/game';
 import { createInitialState } from '@/lib/game-engine';
 
+// StockStand is an anonymous game — no backend, no accounts.
+// localStorage is the only persistence layer.
+
 export const STORAGE_KEY    = 'stockstand_v1';
 export const SCHEMA_VERSION = 1;
 
@@ -50,40 +53,13 @@ export function clearStorage(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-// ─── DB sync (localStorage primary, Supabase/Postgres secondary) ──────────────
+// ─── DB stubs — no-ops in anonymous mode ─────────────────────────────────────
 
-/**
- * Fire-and-forget sync to the DB.
- * - Skipped entirely for under-13 (COPPA) and for sessions without ageTier
- * - Silently ignored if the user isn't signed in (API returns 401)
- * - Never blocks the game — localStorage is always the source of truth
- */
-export async function syncToDatabase(state: GameState): Promise<void> {
-  if (typeof window === 'undefined') return;
-  if (!state.ageTier || state.ageTier === 'child') return; // COPPA guard
-  try {
-    fetch('/api/game-state', {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ gameState: state, ageTier: state.ageTier }),
-    }).catch(() => { /* silently ignore network errors */ });
-  } catch {
-    // Ignore — DB is secondary
-  }
+export async function syncToDatabase(_state: GameState): Promise<void> {
+  // No-op: anonymous game, localStorage only
 }
 
-/**
- * Load game state from DB (called on mount when localStorage is empty).
- * Used for cross-device sync: returning player on a new device gets their save.
- */
 export async function loadFromDatabase(): Promise<GameState | null> {
-  if (typeof window === 'undefined') return null;
-  try {
-    const res = await fetch('/api/game-state');
-    if (!res.ok) return null;
-    const data = await res.json() as { gameState: GameState | null } | null;
-    return data?.gameState ?? null;
-  } catch {
-    return null;
-  }
+  // No-op: anonymous game, localStorage only
+  return null;
 }

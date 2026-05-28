@@ -13,7 +13,6 @@ import StatsBar    from '@/components/StatsBar/StatsBar';
 import Timer       from '@/components/Timer/Timer';
 import GoalBar      from '@/components/GoalBar/GoalBar';
 import WinScreen    from '@/components/WinScreen/WinScreen';
-import AuthButton   from '@/components/AuthButton/AuthButton';
 import ReturnScreen from '@/components/ReturnScreen/ReturnScreen';
 import type { GameEvent } from '@/types/game';
 import styles from './GameBoard.module.css';
@@ -224,7 +223,6 @@ export default function GameBoard() {
             paused={timerPaused}
           />
           <ModeToggle mode={mode} onChange={setDisplayMode} />
-          <AuthButton ageTier={state.ageTier} />
         </div>
       </header>
 
