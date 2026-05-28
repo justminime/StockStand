@@ -12,6 +12,7 @@ interface OnboardingProps {
     displayMode:      DisplayMode;
     winCondition:     'goal' | 'sandbox';
     selectedProducts: ProductId[];
+    ageTier:          AgeTier;
   }) => void;
 }
 
@@ -45,6 +46,7 @@ export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
       displayMode,
       winCondition:     'sandbox',
       selectedProducts: Array.from(selected),
+      ageTier,
     });
   }
 

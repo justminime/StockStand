@@ -11,8 +11,10 @@ import MarketCard  from '@/components/MarketCard/MarketCard';
 import ModeToggle  from '@/components/ModeToggle/ModeToggle';
 import StatsBar    from '@/components/StatsBar/StatsBar';
 import Timer       from '@/components/Timer/Timer';
-import GoalBar     from '@/components/GoalBar/GoalBar';
-import WinScreen   from '@/components/WinScreen/WinScreen';
+import GoalBar      from '@/components/GoalBar/GoalBar';
+import WinScreen    from '@/components/WinScreen/WinScreen';
+import AuthButton   from '@/components/AuthButton/AuthButton';
+import ReturnScreen from '@/components/ReturnScreen/ReturnScreen';
 import type { GameEvent } from '@/types/game';
 import styles from './GameBoard.module.css';
 
@@ -46,6 +48,12 @@ export default function GameBoard() {
     setTheme,
     setWinCondition,
   } = useGameState();
+
+  // ── "You were away" return screen ───────────────
+  // Check once on first load: if lastSaved was > 24 h ago and the player
+  // has already played at least one round, show the return screen.
+  const hasCheckedReturnRef = useRef(false);
+  const [showReturnScreen,  setShowReturnScreen]  = useState(false);
 
   const {
     prices,
@@ -81,6 +89,16 @@ export default function GameBoard() {
     prevRoundRef.current    = state.round;
     prevUnlockedRef.current = state.unlockedCards;
   }, [isLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Return-screen check — runs once after load, never again
+  useEffect(() => {
+    if (!isLoaded || hasCheckedReturnRef.current) return;
+    hasCheckedReturnRef.current = true;
+    if (state.round > 1 && state.lastSaved) {
+      const hoursAway = (Date.now() - new Date(state.lastSaved).getTime()) / 3_600_000;
+      if (hoursAway >= 24) setShowReturnScreen(true);
+    }
+  }, [isLoaded, state.round, state.lastSaved]);
 
   // Detect round completion — fires whenever state.round increments
   useEffect(() => {
@@ -158,11 +176,23 @@ export default function GameBoard() {
   const unlockedSet   = new Set(state.unlockedCards);
   const unlockedCards = ALL_MARKET_CARDS.filter(c => unlockedSet.has(c.id));
   const theme         = state.standTheme ?? 'street';
+  const daysAway      = Math.floor((Date.now() - new Date(state.lastSaved).getTime()) / 86_400_000);
 
   const showClosedBanner = marketClosed && !closedDismissed;
 
   return (
     <div className={styles.layout} data-theme={theme}>
+
+      {/* ── Return screen (> 24 h away) ─────────────── */}
+      {showReturnScreen && Object.keys(prices).length > 0 && (
+        <ReturnScreen
+          standName={state.standName || 'Stand'}
+          daysAway={Math.max(1, daysAway)}
+          savedPrices={state.stockPrices}
+          currentPrices={prices}
+          onDismiss={() => setShowReturnScreen(false)}
+        />
+      )}
 
       {/* ── Win Screen overlay ───────────────────────── */}
       {showWinScreen && (
@@ -194,6 +224,7 @@ export default function GameBoard() {
             paused={timerPaused}
           />
           <ModeToggle mode={mode} onChange={setDisplayMode} />
+          <AuthButton ageTier={state.ageTier} />
         </div>
       </header>
 

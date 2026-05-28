@@ -337,6 +337,7 @@ export function createInitialState(overrides?: Partial<GameState>): GameState {
     demandMult:       1.0,
     costMult:         1.0,
     currentEvent:     null,
+    ageTier:          null,
     onboardingDone:   false,
     soundEnabled:     false,
     standTheme:       'street',

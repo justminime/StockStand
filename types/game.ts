@@ -69,6 +69,7 @@ export interface GameState {
   demandMult:       number;
   costMult:         number;
   currentEvent:     GameEvent | null;
+  ageTier:          AgeTier | null;    // set at onboarding; null = not yet selected
   onboardingDone:   boolean;
   soundEnabled:     boolean;
   standTheme:       StandTheme;        // visual theme for the stand background

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createInitialState, simulateRound, MARKET_CARDS } from '@/lib/game-engine';
-import { loadFromStorage, saveToStorage, clearStorage } from '@/lib/sync';
-import type { GameState, ProductId, DisplayMode, StandTheme } from '@/types/game';
+import { loadFromStorage, saveToStorage, clearStorage, syncToDatabase, loadFromDatabase } from '@/lib/sync';
+import type { GameState, ProductId, DisplayMode, StandTheme, AgeTier } from '@/types/game';
 
 const SAVE_DEBOUNCE_MS = 500;
 
@@ -12,21 +12,32 @@ export function useGameState() {
   const [isLoaded, setIsLoaded] = useState(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Load from localStorage on mount
+  // Load from localStorage on mount; fall back to DB for cross-device sync
   useEffect(() => {
-    const saved = loadFromStorage();
-    if (saved) {
-      setState(saved);
+    async function loadState() {
+      const local = loadFromStorage();
+      if (local) {
+        setState(local);
+      } else {
+        // No local save — try DB (returning player on a new device)
+        const remote = await loadFromDatabase();
+        if (remote) {
+          setState(remote);
+          saveToStorage(remote); // cache locally so next load is instant
+        }
+      }
+      setIsLoaded(true);
     }
-    setIsLoaded(true);
+    loadState();
   }, []);
 
-  // Debounced save to localStorage on every state change
+  // Debounced save: localStorage (primary) + DB (secondary, fire-and-forget)
   useEffect(() => {
     if (!isLoaded) return;
     if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
     saveTimerRef.current = setTimeout(() => {
       saveToStorage(state);
+      syncToDatabase(state); // no-op for children / unauthenticated users
     }, SAVE_DEBOUNCE_MS);
     return () => {
       if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
@@ -63,6 +74,7 @@ export function useGameState() {
     displayMode:      DisplayMode;
     winCondition:     'goal' | 'sandbox';
     selectedProducts: ProductId[];
+    ageTier:          AgeTier;
   }) => {
     setState(prev => ({
       ...prev,
@@ -70,6 +82,7 @@ export function useGameState() {
       displayMode:      opts.displayMode,
       winCondition:     opts.winCondition,
       selectedProducts: opts.selectedProducts,
+      ageTier:          opts.ageTier,
       onboardingDone:   true,
     }));
   }, []);

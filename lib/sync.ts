@@ -50,13 +50,40 @@ export function clearStorage(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-// ─── DB stubs (Wave 5 replaces these with real API calls) ─────────────────────
+// ─── DB sync (localStorage primary, Supabase/Postgres secondary) ──────────────
 
-export async function syncToDatabase(_state: GameState): Promise<void> {
-  // Wave 5: POST /api/game-state
+/**
+ * Fire-and-forget sync to the DB.
+ * - Skipped entirely for under-13 (COPPA) and for sessions without ageTier
+ * - Silently ignored if the user isn't signed in (API returns 401)
+ * - Never blocks the game — localStorage is always the source of truth
+ */
+export async function syncToDatabase(state: GameState): Promise<void> {
+  if (typeof window === 'undefined') return;
+  if (!state.ageTier || state.ageTier === 'child') return; // COPPA guard
+  try {
+    fetch('/api/game-state', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ gameState: state, ageTier: state.ageTier }),
+    }).catch(() => { /* silently ignore network errors */ });
+  } catch {
+    // Ignore — DB is secondary
+  }
 }
 
+/**
+ * Load game state from DB (called on mount when localStorage is empty).
+ * Used for cross-device sync: returning player on a new device gets their save.
+ */
 export async function loadFromDatabase(): Promise<GameState | null> {
-  // Wave 5: GET /api/game-state
-  return null;
+  if (typeof window === 'undefined') return null;
+  try {
+    const res = await fetch('/api/game-state');
+    if (!res.ok) return null;
+    const data = await res.json() as { gameState: GameState | null } | null;
+    return data?.gameState ?? null;
+  } catch {
+    return null;
+  }
 }

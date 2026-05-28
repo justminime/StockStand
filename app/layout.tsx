@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Fredoka, Nunito } from 'next/font/google';
+import { Providers }       from './providers';
 import '@/styles/tokens.css';
 import './globals.css';
 
@@ -35,7 +36,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${fredoka.variable} ${nunito.variable}`}>
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

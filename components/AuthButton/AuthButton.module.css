@@ -1,0 +1,58 @@
+/* AuthButton.module.css */
+
+/* Sign-in pill */
+.signInBtn {
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 6px 12px;
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.signInBtn:hover,
+.signInBtn:focus-visible {
+  border-color: var(--yellow);
+  background: #FFFDE7;
+  outline: none;
+}
+
+/* Signed-in state */
+.signedIn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.signOutBtn {
+  background: none;
+  border: none;
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green);
+  cursor: pointer;
+  padding: 0;
+  transition: color var(--transition-fast);
+}
+
+.signOutBtn:hover,
+.signOutBtn:focus-visible {
+  color: var(--text);
+  outline: none;
+}
