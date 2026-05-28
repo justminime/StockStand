@@ -1,0 +1,63 @@
+/* StatsBar.module.css */
+
+.bar {
+  background: var(--card);
+  border-top: 1.5px solid var(--border);
+  padding: 12px var(--page-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-family: var(--font-nunito), sans-serif;
+}
+
+.stats {
+  display: flex;
+  align-items: center;
+  gap: var(--stats-gap);
+  flex-wrap: wrap;
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 60px;
+}
+
+.statLabel {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.statValue {
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text);
+  font-family: var(--font-fredoka), 'Fredoka One', cursive;
+  line-height: 1.2;
+}
+
+.pnlGreen {
+  color: var(--green-dark);
+}
+
+.pnlRed {
+  color: var(--red-dark);
+}
+
+.chartWrap {
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.disclaimer {
+  font-size: 10px;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.4;
+  margin: 0;
+}

@@ -1,0 +1,83 @@
+/* StockStand Design Tokens
+   Source of truth: stockstand.html (Design System)
+   All components must reference these variables — no hardcoded hex values.
+*/
+
+:root {
+  /* ─── Color: Primary — Lemon Yellow ─── */
+  --yellow:          #F5C518;
+  --yellow-dark:     #E6A800;
+  --yellow-light:    #FFF8DC;
+
+  /* ─── Color: Semantic — Profit & Loss ─── */
+  --green:           #2ECC71;
+  --green-dark:      #27AE60;
+  --red:             #E74C3C;
+  --red-dark:        #C0392B;
+
+  /* ─── Color: Accent ─── */
+  --blue:            #3498DB;
+  --purple:          #9B59B6;
+  --orange:          #E67E22;
+
+  /* ─── Color: Neutral ─── */
+  --bg:              #FFFBF0;   /* Warm white page background */
+  --card:            #FFFFFF;   /* Card surfaces */
+  --text:            #2C2C2C;   /* Primary text */
+  --muted:           #6B6B6B;   /* Secondary text — WCAG AA on #FFFBF0 (~4.6:1) */
+  --border:          #EEEEEE;   /* Card borders, dividers */
+
+  /* ─── Alias tokens (used in ARCHITECTURE.md) ─── */
+  --color-bg:        var(--bg);
+  --color-primary:   #2D6A4F;
+  --color-accent:    var(--orange);
+  --color-text:      var(--text);
+  --color-muted:     var(--muted);
+  --color-border:    var(--border);
+  --color-success:   var(--green);
+  --color-danger:    var(--red);
+
+  /* ─── Typography ─── */
+  --font-heading:    'Fredoka One', cursive;
+  --font-body:       'Nunito', sans-serif;
+
+  /* ─── Spacing ─── */
+  --page-padding:    28px;
+  --page-padding-sm: 16px;
+  --card-padding:    24px;
+  --card-gap:        20px;
+  --stats-gap:       24px;
+
+  /* ─── Border radius ─── */
+  --radius-sm:       12px;   /* buttons, inputs */
+  --radius-md:       20px;   /* cards */
+  --radius-lg:       24px;   /* panels */
+  --radius-pill:     100px;  /* pills, tags */
+
+  /* ─── Borders ─── */
+  --border-width:    2px;
+  --border-width-hi: 2.5px;  /* highlighted cards */
+
+  /* ─── Shadows ─── */
+  --shadow-card:     0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-btn:      0 3px 0 var(--green-dark);
+  --shadow-btn-y:    0 3px 0 var(--yellow-dark);
+
+  /* ─── Transitions ─── */
+  --transition-fast:   150ms ease;
+  --transition-bounce: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-slide:  300ms ease-out;
+
+  /* ─── Product colors ─── */
+  --product-lemonade: var(--yellow);
+  --product-juice:    var(--blue);
+  --product-cookies:  var(--orange);
+  --product-tea:      var(--green);
+  --product-mystery:  var(--purple);
+
+  /* ─── Market card rarity ─── */
+  --card-common-bg:     #FFF8DC;
+  --card-common-text:   #5a3a00;
+  --card-rare-bg:       #EEE8FF;
+  --card-rare-text:     #4a2a9a;
+}

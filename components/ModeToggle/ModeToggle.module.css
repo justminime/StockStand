@@ -1,0 +1,46 @@
+/* ModeToggle.module.css */
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-family: var(--font-fredoka), cursive;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), transform var(--transition-bounce);
+  white-space: nowrap;
+}
+
+.junior {
+  background-color: var(--yellow);
+  color: var(--text);
+  box-shadow: var(--shadow-btn-y);
+}
+
+.junior:hover,
+.junior:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--yellow-dark);
+  outline: none;
+}
+
+.explorer {
+  background-color: var(--green);
+  color: var(--card);
+  box-shadow: var(--shadow-btn);
+}
+
+.explorer:hover,
+.explorer:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 var(--green-dark);
+  outline: none;
+}
+
+.toggle:active {
+  transform: translateY(1px);
+}

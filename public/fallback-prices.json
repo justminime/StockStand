@@ -1,0 +1,9 @@
+{
+  "AAPL": 189.50,
+  "TSLA": 248.00,
+  "MCD":  287.50,
+  "KO":    61.20,
+  "GME":   14.75,
+  "timestamp": "fallback",
+  "source": "static"
+}
