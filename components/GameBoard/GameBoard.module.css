@@ -259,6 +259,35 @@
   box-shadow: 0 0 0 2px var(--yellow);
 }
 
+/* ── Help button (in header) ───────────────────── */
+.helpBtn {
+  background: var(--yellow);
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  min-width: 44px;   /* WCAG 2.5.5 touch target (padding extends hit area) */
+  min-height: 44px;
+  font-family: var(--font-fredoka), cursive;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  box-shadow: 0 2px 0 var(--yellow-dark);
+}
+
+.helpBtn:hover,
+.helpBtn:focus-visible {
+  background: var(--yellow-dark);
+  transform: scale(1.08);
+  outline: none;
+}
+
 /* ── Sound toggle (in header) ──────────────────── */
 .soundBtn {
   background: none;

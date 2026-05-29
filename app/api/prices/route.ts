@@ -17,14 +17,17 @@ export interface MarketContextPayload {
 
 // ─── In-memory cache ──────────────────────────────────────────────────────────
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type CachedPayload = Record<string, any> & { market_context: MarketContextPayload };
+
 interface CacheEntry {
-  payload:   PriceMap & { market_context: MarketContextPayload };
+  payload:   CachedPayload;
   expiresAt: number; // Date.now() + CACHE_TTL
 }
 
 const cache = new Map<string, CacheEntry>();
 
-function getCached(): CacheEntry['payload'] | null {
+function getCached(): CachedPayload | null {
   const entry = cache.get('prices');
   if (!entry) return null;
   if (Date.now() > entry.expiresAt) {
@@ -34,7 +37,7 @@ function getCached(): CacheEntry['payload'] | null {
   return entry.payload;
 }
 
-function setCache(payload: CacheEntry['payload']): void {
+function setCache(payload: CachedPayload): void {
   cache.set('prices', { payload, expiresAt: Date.now() + CACHE_TTL });
 }
 

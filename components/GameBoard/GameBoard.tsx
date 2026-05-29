@@ -15,6 +15,7 @@ import Timer       from '@/components/Timer/Timer';
 import GoalBar      from '@/components/GoalBar/GoalBar';
 import WinScreen    from '@/components/WinScreen/WinScreen';
 import ReturnScreen from '@/components/ReturnScreen/ReturnScreen';
+import HelpScreen   from '@/components/HelpScreen/HelpScreen';
 import type { GameEvent } from '@/types/game';
 import styles from './GameBoard.module.css';
 
@@ -85,6 +86,9 @@ export default function GameBoard() {
   // Win / session-end screen
   const [showWinScreen, setShowWinScreen] = useState(false);
   const [winReason,     setWinReason]    = useState<'goal' | 'session-end'>('goal');
+
+  // Help screen
+  const [showHelp, setShowHelp] = useState(false);
 
   // Mystery Sip unlock toast
   const [mysteryToast, setMysteryToast] = useState(false);
@@ -231,6 +235,9 @@ export default function GameBoard() {
         />
       )}
 
+      {/* ── Help / demo screen ──────────────────────── */}
+      {showHelp && <HelpScreen onClose={() => setShowHelp(false)} />}
+
       {/* ── Win Screen overlay ───────────────────────── */}
       {showWinScreen && (
         <WinScreen
@@ -260,6 +267,16 @@ export default function GameBoard() {
             onExpire={handleRoundEnd}
             paused={timerPaused}
           />
+
+          {/* Help button */}
+          <button
+            className={styles.helpBtn}
+            onClick={() => setShowHelp(true)}
+            aria-label="How to play"
+            title="How to play"
+          >
+            ?
+          </button>
 
           {/* Sound toggle */}
           <button
