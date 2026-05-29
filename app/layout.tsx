@@ -18,13 +18,32 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title:       'StockStand',
-  description: 'Run your lemonade stand, learn to invest! 🍋',
+  title:       'StockStand 🍋',
+  description: 'Run a lemonade stand, secretly learn to invest. Real stock prices, kids-first design.',
+  keywords:    ['lemonade stand', 'kids investing game', 'stock market for kids', 'financial education'],
+  openGraph: {
+    title:       'StockStand 🍋',
+    description: 'Run a lemonade stand, secretly learn to invest.',
+    type:        'website',
+  },
+  twitter: {
+    card:  'summary',
+    title: 'StockStand 🍋',
+  },
+  other: {
+    'mobile-web-app-capable':          'yes',
+    'apple-mobile-web-app-capable':    'yes',
+    'apple-mobile-web-app-status-bar-style': 'default',
+    'apple-mobile-web-app-title':      'StockStand',
+  },
 };
 
 export const viewport: Viewport = {
-  width:        'device-width',
-  initialScale: 1,
+  width:              'device-width',
+  initialScale:       1,
+  maximumScale:       5,          // allow pinch-zoom (accessibility)
+  userScalable:       true,
+  viewportFit:        'cover',    // use full screen on notched devices
 };
 
 export default function RootLayout({

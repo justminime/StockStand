@@ -273,3 +273,35 @@
   padding-top: 4px;
   border-top: 1px solid var(--border);
 }
+
+/* ── Mobile ─────────────────────────────────────── */
+@media (max-width: 480px) {
+  .card {
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .productEmoji {
+    font-size: 38px;
+  }
+
+  .productName {
+    font-size: 16px;
+  }
+
+  /* Bigger thumb for fat fingers */
+  .slider::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+
+  .slider::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* Slider track taller for easier grab */
+  .slider {
+    height: 8px;
+  }
+}
