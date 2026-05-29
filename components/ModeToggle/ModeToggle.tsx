@@ -7,14 +7,18 @@ interface ModeToggleProps {
 }
 
 export default function ModeToggle({ mode, onChange }: ModeToggleProps) {
+  const isJunior = mode === 'junior';
   return (
     <button
       role="switch"
-      aria-checked={mode === 'explorer'}
-      className={`${styles.toggle} ${mode === 'junior' ? styles.junior : styles.explorer}`}
-      onClick={() => onChange(mode === 'junior' ? 'explorer' : 'junior')}
+      aria-checked={!isJunior}
+      aria-label={isJunior ? 'Switch to Explorer mode' : 'Switch to Junior mode'}
+      className={`${styles.toggle} ${isJunior ? styles.junior : styles.explorer}`}
+      onClick={() => onChange(isJunior ? 'explorer' : 'junior')}
     >
-      {mode === 'junior' ? '🌟 Junior' : '📈 Explorer'}
+      {/* emoji always shown; text hidden on small screens via CSS */}
+      <span aria-hidden="true">{isJunior ? '🌟' : '📈'}</span>
+      <span className={styles.label}>{isJunior ? ' Junior' : ' Explorer'}</span>
     </button>
   );
 }

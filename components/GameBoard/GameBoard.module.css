@@ -393,20 +393,86 @@
 }
 
 /* ── Responsive ────────────────────────────────── */
-@media (max-width: 540px) {
+
+/* Tablet and large phones (641–768px) */
+@media (max-width: 768px) {
   .cardsGrid {
-    grid-template-columns: 1fr;
+    padding: 12px var(--page-padding-sm);
+    gap: 14px;
+  }
+
+  .bannerSlot,
+  .roundRow,
+  .cardsSection,
+  .settingsRow {
+    padding-left:  var(--page-padding-sm);
+    padding-right: var(--page-padding-sm);
+  }
+}
+
+/* Small phones (≤ 480px) */
+@media (max-width: 480px) {
+  /* Header wraps: [logo + name + timer] on top, [buttons] below */
+  .header {
+    flex-wrap: wrap;
+    row-gap: 8px;
+    padding: 10px var(--page-padding-sm);
+    position: sticky;
+    top: 0;
+  }
+
+  .headerLeft {
+    flex: 1 1 auto;
+    min-width: 0;
   }
 
   .standName {
     font-size: 18px;
   }
 
-  .header {
-    padding: 12px var(--page-padding-sm);
+  .headerRight {
+    width: 100%;
+    justify-content: flex-end;
+    gap: 10px;
   }
 
+  /* Cards */
+  .cardsGrid {
+    grid-template-columns: 1fr;
+    padding: 10px var(--page-padding-sm);
+    gap: 12px;
+  }
+
+  /* Settings row: wrap but with better grouping */
   .settingsRow {
-    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px var(--page-padding-sm) 12px;
+  }
+
+  /* Theme picker stays left */
+  .themePicker {
+    margin-right: 0;
+  }
+
+  /* Export / Import smaller text */
+  .exportBtn,
+  .importBtn {
+    font-size: 11px;
+    padding: 0 10px;
+  }
+
+  /* End session and reset full-width on very small */
+  .endSessionBtn {
+    flex: 1;
+    justify-content: center;
+  }
+
+  /* Round row */
+  .roundRow {
+    padding-top: 10px;
+  }
+
+  .roundHint {
+    font-size: 12px;
   }
 }

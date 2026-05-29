@@ -15,6 +15,16 @@
   white-space: nowrap;
 }
 
+/* On small phones, show icon only — saves ~80px of header width */
+@media (max-width: 480px) {
+  .toggle {
+    padding: 0 14px;
+    font-size: 18px;
+  }
+  /* Hide the text label, keep the emoji */
+  .label { display: none; }
+}
+
 .junior {
   background-color: var(--yellow);
   color: var(--text);

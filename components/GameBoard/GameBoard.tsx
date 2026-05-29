@@ -15,7 +15,8 @@ import Timer       from '@/components/Timer/Timer';
 import GoalBar      from '@/components/GoalBar/GoalBar';
 import WinScreen    from '@/components/WinScreen/WinScreen';
 import ReturnScreen from '@/components/ReturnScreen/ReturnScreen';
-import HelpScreen   from '@/components/HelpScreen/HelpScreen';
+import HelpScreen       from '@/components/HelpScreen/HelpScreen';
+import PlausibleScript  from '@/components/Analytics/PlausibleScript';
 import type { GameEvent } from '@/types/game';
 import styles from './GameBoard.module.css';
 
@@ -223,6 +224,9 @@ export default function GameBoard() {
 
   return (
     <div className={styles.layout} data-theme={theme}>
+
+      {/* ── Plausible analytics — adults only (COPPA) ─ */}
+      {state.ageTier === 'adult' && <PlausibleScript />}
 
       {/* ── Return screen (> 24 h away) ─────────────── */}
       {showReturnScreen && Object.keys(prices).length > 0 && (
