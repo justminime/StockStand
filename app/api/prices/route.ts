@@ -8,6 +8,12 @@ const CACHE_TTL = 55; // seconds — intentionally NOT 60 to avoid round-timer a
 
 type PriceMap = Record<string, number>;
 
+/** Market context returned alongside prices for weighted event selection */
+export interface MarketContextPayload {
+  spy_delta: number;  // SPY daily % change as decimal (e.g. 0.015 = +1.5%)
+  vix:       number;  // VIX index level
+}
+
 // ─── NYSE market-hours detection ─────────────────────────────────────────────
 
 /**
@@ -98,23 +104,47 @@ export async function GET() {
       const v = fallback.default[sym];
       if (typeof v === 'number') prices[sym] = v;
     }
-    return NextResponse.json({ ...prices, source: 'mock', market_closed: false });
+    return NextResponse.json({
+      ...prices,
+      source: 'mock',
+      market_closed: false,
+      market_context: { spy_delta: 0, vix: 20 } satisfies MarketContextPayload,
+    });
   }
 
   // Per-minute cache key — prevents TTL from aligning with 60s round timer
-  const cacheKey = 'stock:prices:v1:' + new Date().toISOString().slice(0, 16);
+  const cacheKey = 'stock:prices:v2:' + new Date().toISOString().slice(0, 16);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  type CachedPayload = Record<string, any> & { market_context?: MarketContextPayload };
 
   try {
     // Try KV cache first
-    const cached = await kv.get<PriceMap>(cacheKey);
+    const cached = await kv.get<CachedPayload>(cacheKey);
     if (cached) {
-      return NextResponse.json({ ...cached, source: 'cache', market_closed: closed, market_closed_reason: reason });
+      return NextResponse.json({
+        ...cached,
+        source: 'cache',
+        market_closed: closed,
+        market_closed_reason: reason,
+      });
     }
 
-    // Fetch live prices from Yahoo Finance
-    const prices = await fetchLivePrices([...SYMBOLS]);
-    await kv.set(cacheKey, prices, { ex: CACHE_TTL });
-    return NextResponse.json({ ...prices, source: 'live', market_closed: closed, market_closed_reason: reason });
+    // Fetch live prices + market context in parallel
+    const [prices, marketCtx] = await Promise.all([
+      fetchLivePrices([...SYMBOLS]),
+      fetchMarketContext(),
+    ]);
+
+    const payload: CachedPayload = { ...prices, market_context: marketCtx };
+    await kv.set(cacheKey, payload, { ex: CACHE_TTL });
+
+    return NextResponse.json({
+      ...payload,
+      source: 'live',
+      market_closed: closed,
+      market_closed_reason: reason,
+    });
   } catch (err) {
     console.error('[prices] Error:', err instanceof Error ? err.message : err);
     // Fallback on any error (KV down, Yahoo down, etc.)
@@ -124,7 +154,13 @@ export async function GET() {
       const v = fallback.default[sym];
       if (typeof v === 'number') prices[sym] = v;
     }
-    return NextResponse.json({ ...prices, source: 'fallback', market_closed: closed, market_closed_reason: reason });
+    return NextResponse.json({
+      ...prices,
+      source: 'fallback',
+      market_closed: closed,
+      market_closed_reason: reason,
+      market_context: { spy_delta: 0, vix: 20 } satisfies MarketContextPayload,
+    });
   }
 }
 
@@ -169,5 +205,57 @@ async function fetchOneSymbol(symbol: string): Promise<number | null> {
     return typeof price === 'number' ? price : null;
   } catch {
     return null;
+  }
+}
+
+// ─── Market context (SPY Δ% + VIX) ───────────────────────────────────────────
+
+type YahooBriefMeta = {
+  regularMarketPrice?:         number;
+  regularMarketChangePercent?: number;
+};
+type YahooChartRes = { chart?: { result?: Array<{ meta?: YahooBriefMeta }> } };
+
+async function fetchSymbolMeta(symbol: string): Promise<YahooBriefMeta | null> {
+  const encoded = encodeURIComponent(symbol);
+  const url = `https://query2.finance.yahoo.com/v8/finance/chart/${encoded}?interval=1d&range=1d`;
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 3000);
+    const res  = await fetch(url, { signal: controller.signal });
+    if (!res.ok) return null;
+    const data = await res.json() as YahooChartRes;
+    return data?.chart?.result?.[0]?.meta ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Fetch SPY daily change% and VIX level for weighted event selection.
+ * Returns safe defaults (neutral market) on any failure.
+ */
+async function fetchMarketContext(): Promise<MarketContextPayload> {
+  const DEFAULT: MarketContextPayload = { spy_delta: 0, vix: 20 };
+
+  try {
+    const [spyMeta, vixMeta] = await Promise.all([
+      fetchSymbolMeta('SPY'),
+      fetchSymbolMeta('^VIX'),
+    ]);
+
+    const spy_delta =
+      typeof spyMeta?.regularMarketChangePercent === 'number'
+        ? spyMeta.regularMarketChangePercent / 100   // convert % → decimal
+        : 0;
+
+    const vix =
+      typeof vixMeta?.regularMarketPrice === 'number'
+        ? vixMeta.regularMarketPrice
+        : 20;
+
+    return { spy_delta, vix };
+  } catch {
+    return DEFAULT;
   }
 }

@@ -127,6 +127,67 @@ export const GAME_EVENTS: GameEvent[] = [
   { type: 'neutral', emoji: '🏷️', title: 'Yard sale nearby',  message: "A yard sale is bringing extra foot traffic past your stand.",        effect: { target: 'demandMult', modifier:  0.1  } },
 ];
 
+// ─── Weighted event selection ─────────────────────────────────────────────────
+
+export interface MarketContext {
+  /** SPY daily % change as a decimal  e.g. 0.015 = +1.5% */
+  spyDelta: number;
+  /** VIX level e.g. 18.5 */
+  vix:      number;
+}
+
+/**
+ * Picks a random GameEvent weighted by real-market context:
+ *
+ * SPY signal  → good/bad event weight
+ *   SPY > +1.5%  → 55 good : 15 bad : 30 neutral
+ *   SPY < -1.5%  → 15 good : 60 bad : 25 neutral
+ *   neutral zone → 35 good : 30 bad : 35 neutral
+ *
+ * VIX level → event-fire frequency
+ *   VIX > 30   → 35% chance  (high volatility = more drama)
+ *   VIX < 15   → 12% chance  (calm market = quiet day)
+ *   otherwise  → 20%
+ *
+ * Falls back to flat random if no market context is provided.
+ */
+export function selectWeightedEvent(
+  ctx: MarketContext | null,
+): GameEvent | null {
+  // Determine event-fire probability
+  let fireProbability = 0.20;
+  if (ctx) {
+    if      (ctx.vix > 30) fireProbability = 0.35;
+    else if (ctx.vix < 15) fireProbability = 0.12;
+  }
+  if (Math.random() >= fireProbability) return null;
+
+  // Partition events by type
+  const good    = GAME_EVENTS.filter(e => e.type === 'good');
+  const bad     = GAME_EVENTS.filter(e => e.type === 'bad');
+  const neutral = GAME_EVENTS.filter(e => e.type === 'neutral');
+
+  // Determine pool weights (out of 100)
+  let wGood = 35, wBad = 30, wNeutral = 35;
+  if (ctx) {
+    if      (ctx.spyDelta >  0.015) { wGood = 55; wBad = 15; wNeutral = 30; }
+    else if (ctx.spyDelta < -0.015) { wGood = 15; wBad = 60; wNeutral = 25; }
+  }
+
+  // Build weighted pool
+  const pool: GameEvent[] = [];
+  const perGood    = Math.round(wGood    / good.length    || 0);
+  const perBad     = Math.round(wBad     / bad.length     || 0);
+  const perNeutral = Math.round(wNeutral / neutral.length || 0);
+  for (const e of good)    for (let i = 0; i < perGood;    i++) pool.push(e);
+  for (const e of bad)     for (let i = 0; i < perBad;     i++) pool.push(e);
+  for (const e of neutral) for (let i = 0; i < perNeutral; i++) pool.push(e);
+
+  // Fallback: use all events if pool somehow empty
+  const source = pool.length > 0 ? pool : GAME_EVENTS;
+  return source[Math.floor(Math.random() * source.length)];
+}
+
 // ─── checkCardUnlocks ────────────────────────────────────────────────────────
 
 /**
@@ -164,6 +225,7 @@ export function checkCardUnlocks(state: GameState, eventFired?: GameEvent | null
 export function simulateRound(
   state:         GameState,
   currentPrices: Record<string, number>,
+  marketCtx?:    MarketContext | null,
 ): { newState: GameState; roundSummary: RoundSummary } {
   // --- Stock deltas ---
   const stockDeltas: Record<string, number> = {};
@@ -225,8 +287,8 @@ export function simulateRound(
     }
   }
 
-  if (Math.random() < 0.2) {
-    firedEvent = GAME_EVENTS[Math.floor(Math.random() * GAME_EVENTS.length)];
+  firedEvent = selectWeightedEvent(marketCtx ?? null);
+  if (firedEvent) {
     if (firedEvent.effect.target === 'demandMult') {
       newDemandMult = Math.max(0, newDemandMult + firedEvent.effect.modifier);
     } else if (firedEvent.effect.target === 'costMult') {

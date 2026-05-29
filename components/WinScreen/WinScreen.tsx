@@ -1,6 +1,7 @@
 'use client';
 
 import { PRODUCTS } from '@/lib/game-engine';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import type { GameState, ProductId } from '@/types/game';
 import styles from './WinScreen.module.css';
 
@@ -14,6 +15,9 @@ interface WinScreenProps {
 const GOAL_AMOUNT = 100;
 
 export default function WinScreen({ state, reason, onPlayAgain, onKeepPlaying }: WinScreenProps) {
+  // Trap keyboard focus inside the overlay while it is visible
+  const trapRef = useFocusTrap<HTMLDivElement>(true);
+
   const netProfit    = state.totalRevenue - state.totalCosts;
   const roundsPlayed = Math.max(0, state.round - 1);
 
@@ -29,7 +33,7 @@ export default function WinScreen({ state, reason, onPlayAgain, onKeepPlaying }:
 
   return (
     <div className={styles.overlay} role="dialog" aria-modal="true" aria-label={isGoalReason ? 'Goal reached!' : 'Session summary'}>
-      <div className={styles.card}>
+      <div className={styles.card} ref={trapRef}>
 
         {/* Trophy / star */}
         <div className={styles.trophy} aria-hidden="true">

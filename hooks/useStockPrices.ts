@@ -1,11 +1,19 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import type { MarketContext } from '@/lib/game-engine';
 
 const POLL_INTERVAL_MS = 55_000; // 55s — intentionally NOT 60s to avoid round-timer alignment
 const SYMBOLS = ['AAPL', 'TSLA', 'MCD', 'KO', 'GME'] as const;
 
 type Prices = Record<string, number>;
+
+type ApiResponse = Prices & {
+  source?:               string;
+  market_closed?:        boolean;
+  market_closed_reason?: string;
+  market_context?:       { spy_delta: number; vix: number };
+};
 
 export function useStockPrices() {
   const [prices,        setPrices]       = useState<Prices>({});
@@ -13,6 +21,7 @@ export function useStockPrices() {
   const [loading,       setLoading]      = useState(true);
   const [error,         setError]        = useState<string | null>(null);
   const [marketClosed,  setMarketClosed] = useState(false);
+  const [marketContext, setMarketContext] = useState<MarketContext>({ spyDelta: 0, vix: 20 });
   const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastPricesRef = useRef<Prices>({});
 
@@ -20,10 +29,18 @@ export function useStockPrices() {
     try {
       const res = await fetch('/api/prices');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data: Prices & { source?: string; market_closed?: boolean } = await res.json();
+      const data = await res.json() as ApiResponse;
 
       // Track market-closed flag from server (avoids client-side timezone logic)
       setMarketClosed(data.market_closed === true);
+
+      // Market context for weighted event selection
+      if (data.market_context) {
+        setMarketContext({
+          spyDelta: data.market_context.spy_delta,
+          vix:      data.market_context.vix,
+        });
+      }
 
       // Strip non-price fields
       const newPrices: Prices = {};
@@ -66,5 +83,5 @@ export function useStockPrices() {
     return (curr - prev) / prev;
   }, [prices, prevPrices]);
 
-  return { prices, prevPrices, loading, error, marketClosed, getStockDelta, refetch: fetchPrices };
+  return { prices, prevPrices, loading, error, marketClosed, marketContext, getStockDelta, refetch: fetchPrices };
 }

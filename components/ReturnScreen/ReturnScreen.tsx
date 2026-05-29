@@ -8,6 +8,7 @@
  * One tap dismisses it and drops the player straight into the game.
  */
 import { PRODUCTS } from '@/lib/game-engine';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import type { ProductId } from '@/types/game';
 import styles from './ReturnScreen.module.css';
 
@@ -38,6 +39,9 @@ export default function ReturnScreen({
   currentPrices,
   onDismiss,
 }: ReturnScreenProps) {
+  // Trap keyboard focus inside the overlay while it is visible
+  const trapRef = useFocusTrap<HTMLDivElement>(true);
+
   const rows = PRODUCT_IDS
     .map(id => {
       const def   = PRODUCTS[id];
@@ -70,7 +74,7 @@ export default function ReturnScreen({
       aria-label="You were away"
       onClick={onDismiss}
     >
-      <div className={styles.card} onClick={e => e.stopPropagation()}>
+      <div className={styles.card} ref={trapRef} onClick={e => e.stopPropagation()}>
 
         <div className={styles.emoji} aria-hidden="true">📅</div>
 

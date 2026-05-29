@@ -40,11 +40,18 @@ a {
   }
 }
 
-/* Focus visible outline */
+/* Focus visible ring — global baseline (WCAG 2.4.7 / 2.4.11) */
 :focus-visible {
-  outline: 3px solid var(--yellow);
-  outline-offset: 2px;
+  outline: none;          /* suppress default; replaced with box-shadow below */
+  box-shadow: var(--focus-ring);
   border-radius: var(--radius-sm);
+}
+
+/* Where box-shadow is suppressed or inappropriate, fall back to outline */
+:focus-visible:where(input, textarea, select) {
+  outline: 2px solid var(--yellow);
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
 /* Range input reset */

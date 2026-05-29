@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useGameState }    from '@/hooks/useGameState';
 import { useStockPrices }  from '@/hooks/useStockPrices';
+import { useSounds }       from '@/hooks/useSounds';
 import { PRODUCTS, MARKET_CARDS as ALL_MARKET_CARDS } from '@/lib/game-engine';
 import ProductCard from '@/components/ProductCard/ProductCard';
 import StockTicker from '@/components/StockTicker/StockTicker';
@@ -46,7 +47,15 @@ export default function GameBoard() {
     unlockMysteryProduct,
     setTheme,
     setWinCondition,
+    setSoundEnabled,
+    exportSave,
+    importSave,
   } = useGameState();
+
+  const { play } = useSounds(state.soundEnabled);
+
+  // Hidden file input ref for save import
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   // ── "You were away" return screen ───────────────
   // Check once on first load: if lastSaved was > 24 h ago and the player
@@ -57,9 +66,10 @@ export default function GameBoard() {
   const {
     prices,
     prevPrices,
-    loading: pricesLoading,
-    error:   pricesError,
+    loading:       pricesLoading,
+    error:         pricesError,
     marketClosed,
+    marketContext,
     getStockDelta,
   } = useStockPrices();
 
@@ -111,7 +121,16 @@ export default function GameBoard() {
     prevRoundRef.current    = state.round;
 
     if (fresh.length > 0)    setNewCardIds(fresh);
-    if (state.currentEvent)  setActiveEvent(state.currentEvent);
+    if (state.currentEvent)  {
+      setActiveEvent(state.currentEvent);
+      play('event');  // 🔔 chime whenever an event fires
+    }
+
+    // Sound: coin for positive net P&L last round, coin-loss for negative
+    if (state.pnlHistory.length > 0) {
+      const lastPnl = state.pnlHistory[state.pnlHistory.length - 1];
+      play(lastPnl >= 0 ? 'coin' : 'coin-loss');
+    }
 
     // GME (Mystery Sip) auto-unlock at round MYSTERY_UNLOCK_ROUND
     if (
@@ -121,13 +140,18 @@ export default function GameBoard() {
       unlockMysteryProduct();
       setMysteryToast(true);
       setTimeout(() => setMysteryToast(false), 5_000);
+      play('unlock');  // ⭐ sparkle on Mystery Sip unlock
     }
+
+    // Unlock toast sound for any other new cards
+    if (fresh.length > 0) play('unlock');
 
     // Reset processing guard and restart timer
     processingRef.current = false;
     setPaused(false);
     setRoundKey(k => k + 1);
-  }, [state.round, state.currentEvent, state.unlockedCards, state.selectedProducts, isLoaded, unlockMysteryProduct]);
+  }, [state.round, state.currentEvent, state.unlockedCards, state.selectedProducts,
+      state.pnlHistory, isLoaded, unlockMysteryProduct, play]);
 
   // Win detection — goal mode: trigger WinScreen when coins cross threshold
   useEffect(() => {
@@ -137,8 +161,22 @@ export default function GameBoard() {
       setPaused(true); // pause the timer
       setWinReason('goal');
       setShowWinScreen(true);
+      play('win');  // 🏆 fanfare on goal reached
     }
-  }, [state.coins, state.winCondition, isLoaded, showWinScreen]);
+  }, [state.coins, state.winCondition, isLoaded, showWinScreen, play]);
+
+  /** Handle save file import from the hidden <input type="file"> */
+  const handleImportFile = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const result = await importSave(file);
+    if (!result.ok) {
+      // eslint-disable-next-line no-alert
+      alert(result.error ?? 'Import failed.');
+    }
+    // Reset file input so the same file can be re-imported if needed
+    e.target.value = '';
+  }, [importSave]);
 
   /** Called when the round timer hits zero */
   const handleRoundEnd = useCallback(() => {
@@ -147,8 +185,8 @@ export default function GameBoard() {
     setPaused(true);
 
     const currentPrices = Object.keys(prices).length > 0 ? { ...prices } : { ...FALLBACK };
-    runRound(currentPrices);
-  }, [prices, runRound]);
+    runRound(currentPrices, marketContext);
+  }, [prices, marketContext, runRound]);
 
   const handleEndSession = useCallback(() => {
     setPaused(true);
@@ -222,6 +260,17 @@ export default function GameBoard() {
             onExpire={handleRoundEnd}
             paused={timerPaused}
           />
+
+          {/* Sound toggle */}
+          <button
+            className={`${styles.soundBtn} ${state.soundEnabled ? styles.soundBtnActive : ''}`}
+            onClick={() => setSoundEnabled(!state.soundEnabled)}
+            aria-label={state.soundEnabled ? 'Mute sound effects' : 'Enable sound effects'}
+            title={state.soundEnabled ? 'Sound on' : 'Sound off'}
+          >
+            {state.soundEnabled ? '🔊' : '🔇'}
+          </button>
+
           <ModeToggle mode={mode} onChange={setDisplayMode} />
         </div>
       </header>
@@ -324,7 +373,7 @@ export default function GameBoard() {
         </div>
       )}
 
-      {/* ── Settings row: theme + end session ────────── */}
+      {/* ── Settings row: theme + end session + save ──── */}
       <div className={styles.settingsRow}>
 
         {/* Stand theme picker */}
@@ -342,6 +391,30 @@ export default function GameBoard() {
             </button>
           ))}
         </div>
+
+        {/* Export save */}
+        <button className={styles.exportBtn} onClick={exportSave} title="Download save file">
+          💾 Export
+        </button>
+
+        {/* Import save */}
+        <button
+          className={styles.importBtn}
+          onClick={() => importInputRef.current?.click()}
+          title="Load save file"
+        >
+          📂 Import
+        </button>
+
+        {/* Hidden file input for import */}
+        <input
+          ref={importInputRef}
+          type="file"
+          accept=".json,application/json"
+          style={{ display: 'none' }}
+          onChange={handleImportFile}
+          aria-hidden="true"
+        />
 
         {/* End session */}
         <button className={styles.endSessionBtn} onClick={handleEndSession}>
