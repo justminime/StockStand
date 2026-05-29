@@ -344,6 +344,7 @@ export default function GameBoard() {
             stockDelta={getStockDelta(PRODUCTS[id].stockSymbol)}
             priceHistory={state.priceHistory[id] ?? []}
             mode={mode}
+            ageTier={state.ageTier}
             onPriceChange={setPrice}
           />
         ))}
