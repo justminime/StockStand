@@ -1,8 +1,9 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { PRODUCTS, calculateDemand } from '@/lib/game-engine';
-import type { ProductId, ProductState, DisplayMode } from '@/types/game';
+import type { ProductId, ProductState, DisplayMode, AgeTier } from '@/types/game';
+import { StockExplainButton, StockExplainPanel } from '@/components/StockExplain/StockExplain';
 import styles from './ProductCard.module.css';
 
 interface ProductCardProps {
@@ -13,6 +14,7 @@ interface ProductCardProps {
   stockDelta:    number;    // % change in linked stock (0.05 = +5%)
   priceHistory:  number[];  // last N stock price points (for Explorer sparkline)
   mode:          DisplayMode;
+  ageTier:       AgeTier | null;
   onPriceChange: (productId: ProductId, price: number) => void;
 }
 
@@ -56,8 +58,11 @@ export default function ProductCard({
   stockDelta,
   priceHistory,
   mode,
+  ageTier,
   onPriceChange,
 }: ProductCardProps) {
+  const [explainOpen, setExplainOpen] = useState(false);
+
   const def           = PRODUCTS[productId];
   const effectiveCost = product.cost * costMult;
   const isProfitable  = product.price > effectiveCost;
@@ -108,14 +113,32 @@ export default function ProductCard({
         <span className={styles.productEmoji} aria-hidden="true">{def.emoji}</span>
         <div className={styles.headerInfo}>
           <h3 className={styles.productName}>{def.label}</h3>
-          {mode === 'explorer' && (
-            <div className={styles.stockRow}>
-              <span className={styles.stockSymbol}>{def.stockSymbol}</span>
-              <span className={`${styles.changePill} ${pillClass}`}>{pillText}</span>
-            </div>
-          )}
+          <div className={styles.stockRow}>
+            {mode === 'explorer' && (
+              <>
+                <span className={styles.stockSymbol}>{def.stockSymbol}</span>
+                <span className={`${styles.changePill} ${pillClass}`}>{pillText}</span>
+              </>
+            )}
+            {/* Explain trigger button — always visible */}
+            <StockExplainButton
+              open={explainOpen}
+              onToggle={() => setExplainOpen(o => !o)}
+            />
+          </div>
         </div>
       </div>
+
+      {/* ── Explain panel — full-width, slides in below header ── */}
+      <StockExplainPanel
+        symbol={def.stockSymbol}
+        delta={stockDelta}
+        productName={def.label}
+        costMult={costMult}
+        ageTier={ageTier}
+        showSymbol={mode === 'explorer'}
+        open={explainOpen}
+      />
 
       {/* ── Sparkline (Explorer only) ───────────── */}
       {mode === 'explorer' && priceHistory.length >= 2 && (

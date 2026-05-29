@@ -1,0 +1,152 @@
+/* StockExplain.module.css — inline expand panel inside ProductCard */
+
+/* ── Trigger button ───────────────────────────────── */
+.triggerBtn {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 2px 10px;
+  font-size: 12px;
+  font-family: var(--font-nunito), sans-serif;
+  color: var(--muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 28px;
+  transition: border-color var(--transition-fast), color var(--transition-fast),
+              background var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.triggerBtn:hover,
+.triggerBtn:focus-visible {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: #EBF5FF;
+  outline: none;
+}
+
+.triggerBtnActive {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: #EBF5FF;
+}
+
+/* ── Panel wrapper — animated slide-down ──────────── */
+.panelWrap {
+  overflow: hidden;
+  /* height is managed via max-height animation */
+  max-height: 0;
+  transition: max-height 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity    200ms ease;
+  opacity: 0;
+}
+
+.panelWrapOpen {
+  max-height: 600px; /* generous enough for any tier */
+  opacity: 1;
+}
+
+/* ── Panel content ────────────────────────────────── */
+.panel {
+  border-top: 1.5px solid var(--border);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  font-family: var(--font-nunito), sans-serif;
+}
+
+/* Company blurb row */
+.companyRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.companyName {
+  font-family: var(--font-fredoka), cursive;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.companyBlurb {
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+/* Section blocks */
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.sectionHeader {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.sectionBody {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.55;
+}
+
+/* Real-world section accent */
+.sectionRealWorld .sectionHeader { color: var(--blue);   }
+.sectionRealWorld .sectionBody   { color: var(--text);   }
+
+/* Game impact section accent */
+.sectionGame .sectionHeader { color: var(--green-dark); }
+.sectionGame .sectionBody   { color: var(--text);       }
+
+/* Tip section */
+.tipBox {
+  background: var(--yellow-light);
+  border: 1.5px solid var(--yellow);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 12px;
+  color: var(--text);
+  line-height: 1.5;
+  display: flex;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.tipIcon {
+  font-size: 14px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+/* Direction badge */
+.dirBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: var(--border);
+  color: var(--muted);
+  margin-left: auto;
+}
+
+/* ── Reduced motion ───────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .panelWrap {
+    transition: opacity 150ms ease;
+  }
+}
