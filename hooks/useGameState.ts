@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { createInitialState, simulateRound, MARKET_CARDS } from '@/lib/game-engine';
 import { loadFromStorage, saveToStorage, clearStorage } from '@/lib/sync';
-import type { GameState, ProductId, DisplayMode, StandTheme } from '@/types/game';
+import type { GameState, ProductId, DisplayMode, StandTheme, AgeTier } from '@/types/game';
+import type { MarketContext } from '@/lib/game-engine';
 
 const SAVE_DEBOUNCE_MS = 500;
 
@@ -15,9 +16,7 @@ export function useGameState() {
   // Load from localStorage on mount
   useEffect(() => {
     const saved = loadFromStorage();
-    if (saved) {
-      setState(saved);
-    }
+    if (saved) setState(saved);
     setIsLoaded(true);
   }, []);
 
@@ -33,12 +32,15 @@ export function useGameState() {
     };
   }, [state, isLoaded]);
 
-  const runRound = useCallback((currentPrices: Record<string, number>) => {
-    setState(prev => {
-      const { newState } = simulateRound(prev, currentPrices);
-      return newState;
-    });
-  }, []);
+  const runRound = useCallback(
+    (currentPrices: Record<string, number>, marketCtx?: MarketContext | null) => {
+      setState(prev => {
+        const { newState } = simulateRound(prev, currentPrices, marketCtx);
+        return newState;
+      });
+    },
+    [],
+  );
 
   const setPrice = useCallback((productId: ProductId, price: number) => {
     setState(prev => ({
@@ -63,6 +65,7 @@ export function useGameState() {
     displayMode:      DisplayMode;
     winCondition:     'goal' | 'sandbox';
     selectedProducts: ProductId[];
+    ageTier:          AgeTier;
   }) => {
     setState(prev => ({
       ...prev,
@@ -70,6 +73,7 @@ export function useGameState() {
       displayMode:      opts.displayMode,
       winCondition:     opts.winCondition,
       selectedProducts: opts.selectedProducts,
+      ageTier:          opts.ageTier,
       onboardingDone:   true,
     }));
   }, []);
@@ -102,6 +106,59 @@ export function useGameState() {
     setState(prev => ({ ...prev, winCondition }));
   }, []);
 
+  /** Toggle sound effects on/off (persisted in game state) */
+  const setSoundEnabled = useCallback((enabled: boolean) => {
+    setState(prev => ({ ...prev, soundEnabled: enabled }));
+  }, []);
+
+  /**
+   * Export current game state as a JSON file download.
+   * Creates a temporary <a> element and programmatically clicks it.
+   */
+  const exportSave = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    const json = JSON.stringify(state, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = `stockstand-save-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, [state]);
+
+  /**
+   * Import a game state JSON file.
+   * Validates schema version before applying — mismatched versions are rejected.
+   * Returns a promise so callers can await confirmation.
+   */
+  const importSave = useCallback((file: File): Promise<{ ok: boolean; error?: string }> => {
+    return new Promise(resolve => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        try {
+          const parsed = JSON.parse(e.target?.result as string) as GameState;
+          if (typeof parsed.schemaVersion !== 'number') {
+            return resolve({ ok: false, error: 'Not a valid StockStand save file.' });
+          }
+          // Forward-migrate: merge with defaults to fill any new fields
+          const defaults = createInitialState();
+          const merged   = { ...defaults, ...parsed };
+          clearStorage();
+          saveToStorage(merged);
+          setState(merged);
+          resolve({ ok: true });
+        } catch {
+          resolve({ ok: false, error: 'Failed to read file. Is it a valid JSON save?' });
+        }
+      };
+      reader.onerror = () => resolve({ ok: false, error: 'File read error.' });
+      reader.readAsText(file);
+    });
+  }, []);
+
   return {
     state,
     isLoaded,
@@ -115,6 +172,9 @@ export function useGameState() {
     unlockMysteryProduct,
     setTheme,
     setWinCondition,
+    setSoundEnabled,
+    exportSave,
+    importSave,
     MARKET_CARDS,
   };
 }

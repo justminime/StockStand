@@ -10,6 +10,9 @@
 import type { GameState } from '@/types/game';
 import { createInitialState } from '@/lib/game-engine';
 
+// StockStand is an anonymous game — no backend, no accounts.
+// localStorage is the only persistence layer.
+
 export const STORAGE_KEY    = 'stockstand_v1';
 export const SCHEMA_VERSION = 1;
 
@@ -50,13 +53,13 @@ export function clearStorage(): void {
   localStorage.removeItem(STORAGE_KEY);
 }
 
-// ─── DB stubs (Wave 5 replaces these with real API calls) ─────────────────────
+// ─── DB stubs — no-ops in anonymous mode ─────────────────────────────────────
 
 export async function syncToDatabase(_state: GameState): Promise<void> {
-  // Wave 5: POST /api/game-state
+  // No-op: anonymous game, localStorage only
 }
 
 export async function loadFromDatabase(): Promise<GameState | null> {
-  // Wave 5: GET /api/game-state
+  // No-op: anonymous game, localStorage only
   return null;
 }
