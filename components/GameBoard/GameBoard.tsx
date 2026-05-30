@@ -69,6 +69,7 @@ export default function GameBoard() {
     prices,
     prevPrices,
     dayChangePcts,
+    foreignMarket,
     loading:       pricesLoading,
     error:         pricesError,
     marketClosed,
@@ -313,7 +314,13 @@ export default function GameBoard() {
       {showClosedBanner && (
         <div className={styles.closedBanner} role="status">
           <span aria-hidden="true">🔔</span>
-          <span>NYSE is closed — using yesterday&apos;s price moves so the game stays realistic. Play on! 🌙</span>
+          <span>
+            NYSE is closed —{' '}
+            {foreignMarket
+              ? <>live {foreignMarket} moves are powering the game right now 🌏</>
+              : <>using yesterday&apos;s price moves so the game stays realistic 🌙</>
+            }
+          </span>
           <button
             className={styles.closedDismiss}
             onClick={() => setClosedDismissed(true)}
