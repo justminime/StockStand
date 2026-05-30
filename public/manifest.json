@@ -1,0 +1,18 @@
+{
+  "name": "StockStand",
+  "short_name": "StockStand",
+  "description": "Run a lemonade stand, secretly learn to invest.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFBF0",
+  "theme_color": "#F5C518",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
