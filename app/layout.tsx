@@ -18,6 +18,7 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://stockstand.shifth.com'),
   title:       'StockStand 🍋',
   description: 'Run a lemonade stand, secretly learn to invest. Real stock prices, kids-first design.',
   keywords:    ['lemonade stand', 'kids investing game', 'stock market for kids', 'financial education'],
@@ -25,16 +26,18 @@ export const metadata: Metadata = {
     title:       'StockStand 🍋',
     description: 'Run a lemonade stand, secretly learn to invest.',
     type:        'website',
+    url:         'https://stockstand.shifth.com',
+    siteName:    'StockStand',
   },
   twitter: {
     card:  'summary',
     title: 'StockStand 🍋',
   },
   other: {
-    'mobile-web-app-capable':          'yes',
-    'apple-mobile-web-app-capable':    'yes',
+    'mobile-web-app-capable':               'yes',
+    'apple-mobile-web-app-capable':         'yes',
     'apple-mobile-web-app-status-bar-style': 'default',
-    'apple-mobile-web-app-title':      'StockStand',
+    'apple-mobile-web-app-title':           'StockStand',
   },
 };
 
