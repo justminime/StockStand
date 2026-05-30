@@ -26,7 +26,6 @@ const FALLBACK: Record<string, number> = {
 };
 
 const ROUND_SECONDS = 60;
-const GOAL_AMOUNT   = 100;
 
 // GME auto-unlock round
 const MYSTERY_UNLOCK_ROUND = 5;
@@ -170,7 +169,7 @@ export default function GameBoard() {
   useEffect(() => {
     if (!isLoaded) return;
     if (showWinScreen) return; // already showing
-    if (state.winCondition === 'goal' && state.coins >= GOAL_AMOUNT) {
+    if (state.winCondition === 'goal' && state.coins >= state.goalAmount) {
       setPaused(true); // pause the timer
       setWinReason('goal');
       setShowWinScreen(true);
@@ -307,7 +306,7 @@ export default function GameBoard() {
 
       {/* ── Goal progress bar (goal mode only) ──────── */}
       {state.winCondition === 'goal' && (
-        <GoalBar coins={state.coins} goal={GOAL_AMOUNT} />
+        <GoalBar coins={state.coins} goal={state.goalAmount} />
       )}
 
       {/* ── Market-closed banner ─────────────────────── */}

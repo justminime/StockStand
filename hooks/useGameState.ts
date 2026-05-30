@@ -68,6 +68,7 @@ export function useGameState() {
     standName:        string;
     displayMode:      DisplayMode;
     winCondition:     'goal' | 'sandbox';
+    goalAmount:       number;
     selectedProducts: ProductId[];
     ageTier:          AgeTier;
   }) => {
@@ -76,6 +77,7 @@ export function useGameState() {
       standName:        opts.standName,
       displayMode:      opts.displayMode,
       winCondition:     opts.winCondition,
+      goalAmount:       opts.goalAmount,
       selectedProducts: opts.selectedProducts,
       ageTier:          opts.ageTier,
       onboardingDone:   true,

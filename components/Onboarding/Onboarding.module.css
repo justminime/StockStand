@@ -280,6 +280,92 @@
   outline: none;
 }
 
+/* ── Section label (used in step 3) ──────────── */
+.sectionLabel {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  margin: 0;
+}
+
+/* ── Goal picker ──────────────────────────────── */
+.goalPicker {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.goalPresets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.goalBtn {
+  flex: 1;
+  min-width: 56px;
+  min-height: 40px;
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-fredoka), cursive;
+  font-size: 16px;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.goalBtn:hover,
+.goalBtn:focus-visible {
+  border-color: var(--yellow);
+  outline: none;
+}
+
+.goalBtnActive {
+  border-color: var(--yellow);
+  background: var(--yellow-light);
+}
+
+.customGoalRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.customGoalPrefix {
+  font-family: var(--font-fredoka), cursive;
+  font-size: 18px;
+  color: var(--muted);
+  line-height: 1;
+}
+
+.customGoalInput {
+  flex: 1;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-family: var(--font-nunito), sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: var(--card);
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.customGoalInput:focus {
+  border-color: var(--yellow);
+}
+
+.customGoalInput::placeholder {
+  color: var(--muted);
+}
+
 /* ── Disclaimer ───────────────────────────────── */
 .disclaimer {
   font-size: 10px;

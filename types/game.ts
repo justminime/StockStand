@@ -53,6 +53,7 @@ export interface GameState {
   standName:        string;
   displayMode:      DisplayMode;
   winCondition:     'goal' | 'sandbox';
+  goalAmount:       number;              // coin target when winCondition === 'goal'
   coins:            number;
   totalRevenue:     number;
   totalCosts:       number;

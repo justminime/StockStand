@@ -418,6 +418,7 @@ export function createInitialState(overrides?: Partial<GameState>): GameState {
     standName:        '',
     displayMode:      'junior',
     winCondition:     'goal',
+    goalAmount:       100,
     coins:            10,
     totalRevenue:     0,
     totalCosts:       0,

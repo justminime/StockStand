@@ -11,40 +11,53 @@ interface OnboardingProps {
     standName:        string;
     displayMode:      DisplayMode;
     winCondition:     'goal' | 'sandbox';
+    goalAmount:       number;
     selectedProducts: ProductId[];
     ageTier:          AgeTier;
   }) => void;
 }
 
-// Mystery Sip (GME) is progression-locked — auto-unlocks at round 5, hidden here
+// Mystery Sip (GME) is progression-locked — auto-unlocks at round 5
 const ALL_PRODUCTS: ProductId[] = ['lemonade', 'juice', 'cookies', 'tea'];
 
+// Goal amount presets (coins)
+const GOAL_PRESETS = [50, 100, 200, 500] as const;
+
 export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
-  const [step, setStep]       = useState<1 | 2 | 3>(1);
-  const [standName, setName]  = useState('');
+  const [step, setStep]     = useState<1 | 2 | 3>(1);
+  const [standName, setName] = useState('');
   const [selected, setSelected] = useState<Set<ProductId>>(new Set(['lemonade', 'cookies']));
-  // Auto-set mode from age tier; user can change in step 3
-  const [displayMode, setMode] = useState<DisplayMode>(ageTier === 'child' ? 'junior' : 'explorer');
+  const [displayMode, setMode]  = useState<DisplayMode>(ageTier === 'child' ? 'junior' : 'explorer');
+  const [winCondition, setWin]  = useState<'goal' | 'sandbox'>('goal');
+  const [goalAmount, setGoal]   = useState<number>(100);
+  const [customGoal, setCustomGoal] = useState('');
 
   function toggleProduct(id: ProductId) {
     setSelected(prev => {
       const next = new Set(prev);
       if (next.has(id)) {
-        if (next.size <= 2) return prev;  // require at least 2
+        if (next.size <= 1) return prev;   // must keep at least 1
         next.delete(id);
       } else {
-        if (next.size >= 3) return prev;  // cap at 3 for a manageable start
+        // All 4 visible products can be selected from the start
         next.add(id);
       }
       return next;
     });
   }
 
+  function handleCustomGoal(val: string) {
+    setCustomGoal(val);
+    const n = parseInt(val, 10);
+    if (!isNaN(n) && n >= 10) setGoal(n);
+  }
+
   function finish() {
     onComplete({
       standName:        standName.trim() || 'My Lemonade Stand',
       displayMode,
-      winCondition:     'sandbox',
+      winCondition,
+      goalAmount:       winCondition === 'goal' ? goalAmount : 100,
       selectedProducts: Array.from(selected),
       ageTier,
     });
@@ -54,7 +67,7 @@ export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
     <div className={styles.container}>
       <div className={styles.card}>
         {/* Step dots */}
-        <div className={styles.steps} aria-label="Setup progress, step {step} of 3">
+        <div className={styles.steps} aria-label={`Setup progress, step ${step} of 3`}>
           {([1, 2, 3] as const).map(n => (
             <div
               key={n}
@@ -97,9 +110,9 @@ export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
         {/* ─── Step 2: Products ─────────────────────────── */}
         {step === 2 && (
           <div className={styles.step}>
-            <h2 className={styles.heading}>Pick 2–3 products to sell</h2>
+            <h2 className={styles.heading}>Pick what to sell</h2>
             <p className={styles.body}>
-              You can expand your menu as you grow and earn more!
+              Choose 1–4 products. A secret 5th unlocks as you play! 🌟
             </p>
 
             <div className={styles.productGrid}>
@@ -122,11 +135,11 @@ export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
             </div>
 
             <p className={styles.hint}>
-              {selected.size < 2
-                ? 'Pick at least 2 products'
-                : selected.size === 3
-                ? 'Max 3 at start — you can unlock more later'
-                : `${selected.size} selected — you can pick one more`}
+              {selected.size === 0
+                ? 'Pick at least 1 product to start'
+                : selected.size === 4
+                ? 'Full menu! Tap any to remove ✓'
+                : `${selected.size} selected — tap more to add`}
             </p>
 
             <div className={styles.navRow}>
@@ -134,7 +147,7 @@ export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
               <button
                 className={styles.btnPrimary}
                 onClick={() => setStep(3)}
-                disabled={selected.size < 2}
+                disabled={selected.size < 1}
               >
                 Next →
               </button>
@@ -142,12 +155,13 @@ export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
           </div>
         )}
 
-        {/* ─── Step 3: Mode ─────────────────────────────── */}
+        {/* ─── Step 3: Mode + Goal ──────────────────────── */}
         {step === 3 && (
           <div className={styles.step}>
-            <h2 className={styles.heading}>How do you want to play?</h2>
-            <p className={styles.body}>You can switch modes any time from the header.</p>
+            <h2 className={styles.heading}>Set your style &amp; goal</h2>
 
+            {/* Display mode */}
+            <p className={styles.sectionLabel}>How do you want to play?</p>
             <div className={styles.modeGrid}>
               <button
                 className={`${styles.modeBtn} ${displayMode === 'junior' ? styles.modeActive : ''}`}
@@ -156,7 +170,7 @@ export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
               >
                 <span className={styles.modeEmoji} aria-hidden="true">🌟</span>
                 <span className={styles.modeTitle}>Junior</span>
-                <span className={styles.modeDesc}>Ages 6+ · Coins &amp; smiley faces</span>
+                <span className={styles.modeDesc}>Ages 6+ · Coins &amp; smileys</span>
               </button>
 
               <button
@@ -166,9 +180,64 @@ export default function Onboarding({ ageTier, onComplete }: OnboardingProps) {
               >
                 <span className={styles.modeEmoji} aria-hidden="true">📈</span>
                 <span className={styles.modeTitle}>Explorer</span>
-                <span className={styles.modeDesc}>Ages 11+ · Charts &amp; real numbers</span>
+                <span className={styles.modeDesc}>Ages 11+ · Charts &amp; numbers</span>
               </button>
             </div>
+
+            {/* Win condition */}
+            <p className={styles.sectionLabel} style={{ marginTop: '18px' }}>Win condition</p>
+            <div className={styles.modeGrid}>
+              <button
+                className={`${styles.modeBtn} ${winCondition === 'goal' ? styles.modeActive : ''}`}
+                onClick={() => setWin('goal')}
+                aria-pressed={winCondition === 'goal'}
+              >
+                <span className={styles.modeEmoji} aria-hidden="true">🎯</span>
+                <span className={styles.modeTitle}>Goal</span>
+                <span className={styles.modeDesc}>Race to earn a coin target</span>
+              </button>
+
+              <button
+                className={`${styles.modeBtn} ${winCondition === 'sandbox' ? styles.modeActive : ''}`}
+                onClick={() => setWin('sandbox')}
+                aria-pressed={winCondition === 'sandbox'}
+              >
+                <span className={styles.modeEmoji} aria-hidden="true">∞</span>
+                <span className={styles.modeTitle}>Sandbox</span>
+                <span className={styles.modeDesc}>Play forever, no finish line</span>
+              </button>
+            </div>
+
+            {/* Goal amount — only shown when goal mode selected */}
+            {winCondition === 'goal' && (
+              <div className={styles.goalPicker}>
+                <p className={styles.sectionLabel}>Coin target</p>
+                <div className={styles.goalPresets}>
+                  {GOAL_PRESETS.map(g => (
+                    <button
+                      key={g}
+                      className={`${styles.goalBtn} ${goalAmount === g && !customGoal ? styles.goalBtnActive : ''}`}
+                      onClick={() => { setGoal(g); setCustomGoal(''); }}
+                    >
+                      ${g}
+                    </button>
+                  ))}
+                </div>
+                <div className={styles.customGoalRow}>
+                  <span className={styles.customGoalPrefix}>$</span>
+                  <input
+                    className={styles.customGoalInput}
+                    type="number"
+                    min={10}
+                    max={9999}
+                    placeholder="custom"
+                    value={customGoal}
+                    onChange={e => handleCustomGoal(e.target.value)}
+                    aria-label="Custom goal amount in coins"
+                  />
+                </div>
+              </div>
+            )}
 
             <div className={styles.navRow}>
               <button className={styles.btnSecondary} onClick={() => setStep(2)}>← Back</button>
