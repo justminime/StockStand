@@ -15,23 +15,45 @@ interface StockExplainProps {
   open:        boolean;
 }
 
+/** Returns label + CSS modifier based on how much the stock moved */
+function stockMoveClass(delta: number): {
+  cls:   string;
+  label: string;
+  emoji: string;
+} {
+  if (delta >  0.03)  return { cls: styles.triggerBtnBigUp,   label: 'Jumped!',    emoji: '🚀' };
+  if (delta >  0.005) return { cls: styles.triggerBtnUp,      label: 'Stock up',   emoji: '📈' };
+  if (delta < -0.03)  return { cls: styles.triggerBtnBigDown, label: 'Dropped!',   emoji: '📉' };
+  if (delta < -0.005) return { cls: styles.triggerBtnDown,    label: 'Stock down', emoji: '📉' };
+  return                      { cls: '',                       label: 'Explain',    emoji: 'ℹ️' };
+}
+
 /** Trigger button — renders inside the card header's stock row */
 export function StockExplainButton({
   open,
   onToggle,
+  delta,
 }: {
   open:     boolean;
   onToggle: () => void;
+  delta:    number;
 }) {
+  const { cls, label, emoji } = stockMoveClass(delta);
+  const hasMoved = Math.abs(delta) > 0.005;
+
   return (
     <button
-      className={`${styles.triggerBtn} ${open ? styles.triggerBtnActive : ''}`}
+      className={[
+        styles.triggerBtn,
+        open ? styles.triggerBtnActive : cls,
+        hasMoved && !open ? styles.triggerBtnPulse : '',
+      ].filter(Boolean).join(' ')}
       onClick={onToggle}
       aria-expanded={open}
-      aria-label={open ? 'Hide stock explanation' : 'Explain this stock'}
+      aria-label={open ? 'Hide stock explanation' : `${label} — tap to explain`}
     >
-      <span aria-hidden="true">{open ? '▲' : 'ℹ️'}</span>
-      {open ? 'Hide' : 'Explain'}
+      <span aria-hidden="true">{open ? '▲' : emoji}</span>
+      {open ? 'Hide' : label}
     </button>
   );
 }

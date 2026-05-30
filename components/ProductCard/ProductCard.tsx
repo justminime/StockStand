@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { PRODUCTS, calculateDemand } from '@/lib/game-engine';
+import { PRODUCTS, calculateDemand, stockCostFactor } from '@/lib/game-engine';
 import type { ProductId, ProductState, DisplayMode, AgeTier } from '@/types/game';
 import { StockExplainButton, StockExplainPanel } from '@/components/StockExplain/StockExplain';
 import styles from './ProductCard.module.css';
@@ -63,16 +63,20 @@ export default function ProductCard({
 }: ProductCardProps) {
   const [explainOpen, setExplainOpen] = useState(false);
 
-  const def           = PRODUCTS[productId];
-  const effectiveCost = product.cost * costMult;
+  const def = PRODUCTS[productId];
+
+  // Base cost from events/cards; stock factor shifts cost further (stock up = cheaper supply)
+  const baseCost      = product.cost * costMult;
+  const effectiveCost = baseCost * stockCostFactor(stockDelta); // what player actually pays
   const isProfitable  = product.price > effectiveCost;
   const margin        = isProfitable
     ? ((product.price - effectiveCost) / product.price) * 100
     : 0;
 
   const predictedSales = useMemo(
-    () => calculateDemand(effectiveCost, product.price, demandMult, stockDelta),
-    [effectiveCost, product.price, demandMult, stockDelta],
+    // Demand calculation uses baseCost (not stock-adjusted) to keep price slider intuitive
+    () => calculateDemand(baseCost, product.price, demandMult, stockDelta),
+    [baseCost, product.price, demandMult, stockDelta],
   );
 
   // Price slider bounds
@@ -85,9 +89,10 @@ export default function ProductCard({
   const pillClass = stockDelta > 0 ? styles.pillUp : stockDelta < 0 ? styles.pillDown : styles.pillNeutral;
   const pillText  = stockDelta > 0 ? `▲ ${deltaPct}%` : stockDelta < 0 ? `▼ ${deltaPct}%` : '─ 0%';
 
-  // Cost direction arrow (was cost impacted by events?)
-  const costArrow      = costMult > 1.01 ? '↑' : costMult < 0.99 ? '↓' : '';
-  const costArrowClass = costMult > 1.01 ? styles.arrowUp : styles.arrowDown;
+  // Cost direction arrow — combines event effect (costMult) + stock cost effect
+  const totalCostFactor = costMult * stockCostFactor(stockDelta);
+  const costArrow      = totalCostFactor > 1.01 ? '↑' : totalCostFactor < 0.99 ? '↓' : '';
+  const costArrowClass = totalCostFactor > 1.01 ? styles.arrowUp : styles.arrowDown;
 
   // Margin bar fill
   const marginFillClass = margin >= 40 ? styles.marginGreen : margin >= 20 ? styles.marginYellow : styles.marginRed;
@@ -120,10 +125,11 @@ export default function ProductCard({
                 <span className={`${styles.changePill} ${pillClass}`}>{pillText}</span>
               </>
             )}
-            {/* Explain trigger button — always visible */}
+            {/* Explain trigger button — label reflects stock movement */}
             <StockExplainButton
               open={explainOpen}
               onToggle={() => setExplainOpen(o => !o)}
+              delta={stockDelta}
             />
           </div>
         </div>

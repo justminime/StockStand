@@ -16,27 +16,48 @@ export const PRODUCTS: Record<ProductId, {
   mystery:  { label: 'Mystery Sip',  emoji: '⭐', stockSymbol: 'GME',  defaultCost: 0.80, defaultPrice: 2.50 },
 };
 
+// ─── Stock sensitivity constants ─────────────────────────────────────────────
+
+/**
+ * How much a real stock move amplifies demand in-game.
+ * 2.0 means a real +10% stock day → +20% demand boost (was 0.3 → +3%).
+ * Exported so StockExplainPanel can reference the same number.
+ */
+export const STOCK_DAMPENING = 2.0;
+
+/**
+ * How much a real stock move affects ingredient cost.
+ * 0.8 means a real +10% stock day → −8% ingredient cost (stock up = cheaper supply).
+ * Clamped to [0.5, 2.0] so extreme meme-stock days don't break the game.
+ */
+export const STOCK_COST_DAMPENING = 0.8;
+
+/** Apply the stock delta to get a cost multiplier (stock up = cheaper). */
+export function stockCostFactor(stockDelta: number): number {
+  return Math.max(0.5, Math.min(2.0, 1.0 - stockDelta * STOCK_COST_DAMPENING));
+}
+
 // ─── Demand formula ──────────────────────────────────────────────────────────
 
 /**
- * Demand formula (from PRD):
+ * Demand formula:
  *   baseDemand  = (cost × 2.2) / price
- *   gameDelta   = stockDelta × 0.3   ← dampening: real 10% move → 3% game effect
+ *   gameDelta   = stockDelta × STOCK_DAMPENING  (2.0 amplifier)
  *   demand      = baseDemand × 6 × demandMult × (1 + gameDelta)
  *   sales       = clamp(round(demand), 0, 20) per product per round
  *
  * The ×6 scale factor ensures sensible customer counts at default prices:
  *   lemonade default (cost=$0.50, price=$1.00) → ~7 customers/round
- *   high price (5× cost)                       → ~2 customers/round
- *   low price (at cost)                        → ~13 customers/round
+ *   TSLA +10% → +20% demand boost (very noticeable!)
+ *   GME  +30% → demand capped at 20 customers (wild ride)
  */
 export function calculateDemand(
-  cost:       number,  // ingredient cost (after costMult applied)
+  cost:       number,  // ingredient cost (after costMult applied, before stock adjustment)
   price:      number,  // selling price set by the player
   demandMult: number,  // global demand multiplier from events/cards
   stockDelta: number,  // % change in linked stock today (0.05 = +5%)
 ): number {
-  const gameDelta  = stockDelta * 0.3;
+  const gameDelta  = stockDelta * STOCK_DAMPENING;
   const baseDemand = (cost * 2.2) / price;
   const demand     = baseDemand * 6 * demandMult * (1 + gameDelta);
   return Math.round(Math.max(0, Math.min(20, demand)));
@@ -249,11 +270,14 @@ export function simulateRound(
     const product     = state.products[id];
     const symbol      = PRODUCTS[id].stockSymbol;
     const stockDelta  = stockDeltas[symbol] ?? 0;
-    const effectiveCost = product.cost * state.costMult;
+    const effectiveCost        = product.cost * state.costMult;
+    // Stock movement directly shifts ingredient cost (up = cheaper supply, down = pricier)
+    const stockAdjustedCost    = effectiveCost * stockCostFactor(stockDelta);
 
+    // Demand uses base effective cost (so price slider feels responsive)
     const sales   = calculateDemand(effectiveCost, product.price, state.demandMult, stockDelta);
     const revenue = product.price * sales;
-    const costs   = effectiveCost * sales;
+    const costs   = stockAdjustedCost * sales;  // actual money out-of-pocket
     const profit  = revenue - costs;
 
     perProduct[id] = { sales, revenue, costs, profit };
