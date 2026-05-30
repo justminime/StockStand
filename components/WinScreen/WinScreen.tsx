@@ -12,8 +12,6 @@ interface WinScreenProps {
   onKeepPlaying:  () => void;
 }
 
-const GOAL_AMOUNT = 100;
-
 export default function WinScreen({ state, reason, onPlayAgain, onKeepPlaying }: WinScreenProps) {
   // Trap keyboard focus inside the overlay while it is visible
   const trapRef = useFocusTrap<HTMLDivElement>(true);
@@ -107,9 +105,9 @@ export default function WinScreen({ state, reason, onPlayAgain, onKeepPlaying }:
         </div>
 
         {/* Goal progress if in sandbox mode near the goal */}
-        {!isGoalReason && state.coins < GOAL_AMOUNT && (
+        {!isGoalReason && state.winCondition === 'goal' && state.coins < state.goalAmount && (
           <p className={styles.goalHint}>
-            You&apos;re ${(GOAL_AMOUNT - state.coins).toFixed(2)} away from the $100 goal!
+            You&apos;re ${(state.goalAmount - state.coins).toFixed(2)} away from the ${state.goalAmount} goal!
           </p>
         )}
 
