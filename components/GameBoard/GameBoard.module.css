@@ -204,6 +204,53 @@
   color: #FFFFFF;
 }
 
+/* Import error — red accent */
+.toastError {
+  background: var(--red);
+  color: #FFFFFF;
+}
+
+/* Inline reset confirmation */
+.resetConfirm {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--muted);
+  font-family: var(--font-nunito), sans-serif;
+  white-space: nowrap;
+}
+
+.resetConfirmYes {
+  background: var(--red);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: var(--font-nunito), sans-serif;
+  cursor: pointer;
+  min-height: 32px;
+  transition: opacity var(--transition-fast);
+}
+
+.resetConfirmYes:hover { opacity: 0.85; }
+
+.resetConfirmNo {
+  background: none;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-pill);
+  padding: 4px 10px;
+  font-size: 12px;
+  font-family: var(--font-nunito), sans-serif;
+  color: var(--muted);
+  cursor: pointer;
+  min-height: 32px;
+  transition: border-color var(--transition-fast);
+}
+
+.resetConfirmNo:hover { border-color: var(--muted); }
+
 @keyframes bounceIn {
   from {
     opacity: 0;

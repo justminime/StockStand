@@ -91,6 +91,12 @@ export default function GameBoard() {
   // Help screen
   const [showHelp, setShowHelp] = useState(false);
 
+  // Inline toast for import errors (replaces alert())
+  const [importError, setImportError] = useState<string | null>(null);
+
+  // Inline confirm for reset (replaces confirm())
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+
   // Mystery Sip unlock toast
   const [mysteryToast, setMysteryToast] = useState(false);
 
@@ -176,8 +182,8 @@ export default function GameBoard() {
     if (!file) return;
     const result = await importSave(file);
     if (!result.ok) {
-      // eslint-disable-next-line no-alert
-      alert(result.error ?? 'Import failed.');
+      setImportError(result.error ?? 'Import failed.');
+      setTimeout(() => setImportError(null), 5_000);
     }
     // Reset file input so the same file can be re-imported if needed
     e.target.value = '';
@@ -383,6 +389,18 @@ export default function GameBoard() {
         </div>
       )}
 
+      {/* ── Import error toast ───────────────────────── */}
+      {importError && (
+        <div
+          className={`${styles.toast} ${styles.toastError}`}
+          role="alert"
+          aria-live="assertive"
+          onClick={() => setImportError(null)}
+        >
+          ⚠️ {importError}
+        </div>
+      )}
+
       {/* ── Mystery Sip unlock toast ──────────────────── */}
       {mysteryToast && (
         <div
@@ -444,12 +462,21 @@ export default function GameBoard() {
         </button>
 
         {/* Reset */}
-        <button
-          className={styles.resetBtn}
-          onClick={() => { if (confirm('Reset game? All progress will be lost.')) resetGame(); }}
-        >
-          ↩ Reset
-        </button>
+        {showResetConfirm ? (
+          <span className={styles.resetConfirm}>
+            Sure?&nbsp;
+            <button className={styles.resetConfirmYes} onClick={() => { setShowResetConfirm(false); resetGame(); }}>
+              Yes, reset
+            </button>
+            <button className={styles.resetConfirmNo} onClick={() => setShowResetConfirm(false)}>
+              Cancel
+            </button>
+          </span>
+        ) : (
+          <button className={styles.resetBtn} onClick={() => setShowResetConfirm(true)}>
+            ↩ Reset
+          </button>
+        )}
       </div>
 
       {/* ── Stats Bar (pinned to bottom) ─────────────── */}

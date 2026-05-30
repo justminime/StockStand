@@ -8,11 +8,8 @@ interface AgeGateProps {
 }
 
 export default function AgeGate({ onSelect }: AgeGateProps) {
-  function handleSelect(tier: AgeTier) {
-    document.cookie = `pending_age_tier=${tier}; path=/; SameSite=Lax`;
-    onSelect(tier);
-  }
-
+  // Age tier flows through React state only — never stored server-side in the
+  // anonymous MVP (COPPA: no PII, no accounts for under-13).
   return (
     <div className={styles.container}>
       <div className={styles.card}>
@@ -22,19 +19,19 @@ export default function AgeGate({ onSelect }: AgeGateProps) {
         <div className={styles.buttons}>
           <button
             className={`${styles.btn} ${styles.btnKid}`}
-            onClick={() => handleSelect('child')}
+            onClick={() => onSelect('child')}
           >
             🧒 I&apos;m a kid (under 13)
           </button>
           <button
             className={`${styles.btn} ${styles.btnTeen}`}
-            onClick={() => handleSelect('teen')}
+            onClick={() => onSelect('teen')}
           >
             🧑 I&apos;m a teen (13–17)
           </button>
           <button
             className={`${styles.btn} ${styles.btnAdult}`}
-            onClick={() => handleSelect('adult')}
+            onClick={() => onSelect('adult')}
           >
             🧓 I&apos;m an adult (18+)
           </button>
