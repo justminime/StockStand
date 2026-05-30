@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <!-- Lemon body gradient: bright highlight at top-left, deep gold at bottom-right -->
+    <radialGradient id="lemon" cx="36%" cy="30%" r="65%">
+      <stop offset="0%"   stop-color="#FFF9C4"/>
+      <stop offset="40%"  stop-color="#F5C518"/>
+      <stop offset="100%" stop-color="#B8860B"/>
+    </radialGradient>
+    <!-- Subtle drop shadow -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#B8860B" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Rounded-square app background — warm cream matching #FFFBF0 -->
+  <rect width="100" height="100" rx="22" fill="#FFF8E1"/>
+
+  <!-- Lemon body — oval rotated ~30°, with nubby tips at both ends -->
+  <g transform="rotate(-30 50 56)">
+    <!-- Main body -->
+    <ellipse cx="50" cy="56" rx="30" ry="21" fill="url(#lemon)" filter="url(#shadow)"/>
+    <!-- Left nub (blossom end) -->
+    <ellipse cx="21"  cy="56" rx="5.5" ry="4"   fill="#C49A00"/>
+    <!-- Right nub (stem end) -->
+    <ellipse cx="79"  cy="56" rx="5.5" ry="4"   fill="#C49A00"/>
+    <!-- Shine highlight -->
+    <ellipse cx="38"  cy="45" rx="12"  ry="7"   fill="white" fill-opacity="0.32" transform="rotate(0 38 45)"/>
+  </g>
+
+  <!-- Leaf + tiny stem at the top-right (stem end of rotated lemon) -->
+  <path d="M 70 26 C 76 16, 86 20, 82 30 C 78 24, 70 30, 70 26 Z"
+        fill="#5D9B2F"/>
+  <!-- Leaf vein -->
+  <path d="M 70 26 C 73 28, 76 26, 78 28"
+        stroke="#4A7A22" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</svg>

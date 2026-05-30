@@ -22,6 +22,12 @@ export const metadata: Metadata = {
   title:       'StockStand 🍋',
   description: 'Run a lemonade stand, secretly learn to invest. Real stock prices, kids-first design.',
   keywords:    ['lemonade stand', 'kids investing game', 'stock market for kids', 'financial education'],
+  icons: {
+    icon:  [{ url: '/icon.svg', type: 'image/svg+xml' }],
+    shortcut: '/icon.svg',
+    apple:    '/icon.svg',
+  },
+  manifest: '/manifest.json',
   openGraph: {
     title:       'StockStand 🍋',
     description: 'Run a lemonade stand, secretly learn to invest.',
