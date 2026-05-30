@@ -34,6 +34,68 @@
   background: #EBF5FF;
 }
 
+/* Stock moved UP — green tint */
+.triggerBtnUp {
+  border-color: var(--green);
+  color: var(--green-dark);
+}
+.triggerBtnUp:hover,
+.triggerBtnUp:focus-visible {
+  border-color: var(--green-dark);
+  background: #F0FFF4;
+  color: var(--green-dark);
+}
+
+/* Stock JUMPED — solid green badge */
+.triggerBtnBigUp {
+  border-color: var(--green);
+  background: #E8FFF0;
+  color: var(--green-dark);
+  font-weight: 700;
+}
+.triggerBtnBigUp:hover,
+.triggerBtnBigUp:focus-visible {
+  background: #D1FAE5;
+  color: var(--green-dark);
+  border-color: var(--green-dark);
+}
+
+/* Stock moved DOWN — red tint */
+.triggerBtnDown {
+  border-color: var(--red);
+  color: var(--red);
+}
+.triggerBtnDown:hover,
+.triggerBtnDown:focus-visible {
+  border-color: var(--red);
+  background: #FFF5F5;
+  color: var(--red);
+}
+
+/* Stock DROPPED — solid red badge */
+.triggerBtnBigDown {
+  border-color: var(--red);
+  background: #FFF0F0;
+  color: var(--red);
+  font-weight: 700;
+}
+.triggerBtnBigDown:hover,
+.triggerBtnBigDown:focus-visible {
+  background: #FFE4E4;
+  color: var(--red);
+  border-color: var(--red);
+}
+
+/* Pulse animation — draws the player's eye after a notable move */
+.triggerBtnPulse {
+  animation: stockPulse 1.8s ease-in-out 2;
+}
+
+@keyframes stockPulse {
+  0%, 100% { box-shadow: none; }
+  50%       { box-shadow: 0 0 0 3px currentColor; opacity: 0.85; }
+}
+
 /* ── Panel wrapper — animated slide-down ──────────── */
 .panelWrap {
   overflow: hidden;

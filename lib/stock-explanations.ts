@@ -10,6 +10,7 @@
  */
 
 import type { AgeTier } from '@/types/game';
+import { STOCK_DAMPENING, STOCK_COST_DAMPENING } from '@/lib/game-engine';
 
 export interface StockExplanation {
   /** Company name for the header */
@@ -258,26 +259,28 @@ export function getStockExplanation(params: {
     bigDown: '⚠️',
   };
 
-  // Game impact sentence — uses actual numbers
-  const gameDelta   = delta * 0.3;
-  const gamePct     = (Math.abs(gameDelta) * 100).toFixed(1);
+  // Game impact — uses actual multipliers from game-engine
+  const realPct     = (Math.abs(delta) * 100).toFixed(1);
+  const demandPct   = (Math.abs(delta * STOCK_DAMPENING) * 100).toFixed(0);
+  const costPct     = (Math.abs(delta * STOCK_COST_DAMPENING) * 100).toFixed(1);
   const costChange  = costMult > 1 ? 'up' : costMult < 1 ? 'down' : 'flat';
 
   function gameImpact(): string {
     if (Math.abs(delta) < 0.005) {
-      return `${productName} ingredient costs are unchanged today.`;
+      return `${productName} ingredient costs are flat today — focus on pricing for demand.`;
     }
-    const dir3 = delta > 0 ? 'cheaper' : 'more expensive';
+    const costDir   = delta > 0 ? 'cheaper' : 'more expensive';
+    const demandDir = delta > 0 ? 'more' : 'fewer';
     if (tier === 'child') {
       return delta > 0
-        ? `Your ${productName} costs a bit less to make today! 🎉`
-        : `Your ${productName} costs a bit more to make today. 😬`;
+        ? `Your ${productName} ingredients are cheaper today AND more customers show up! 🎉`
+        : `Your ${productName} costs more to make AND fewer customers come. 😬 Try raising your price a little!`;
     }
     if (tier === 'teen') {
-      return `${productName} ingredients are ${gamePct}% ${dir3} this round (that's the real ${(Math.abs(delta)*100).toFixed(1)}% move × 0.3 dampening).`;
+      return `Ingredients are ${costPct}% ${costDir} (${realPct}% real move × ${STOCK_COST_DAMPENING} cost factor). Demand is also ${demandPct}% ${demandDir} customers (${realPct}% × ${STOCK_DAMPENING} demand factor).`;
     }
     // adult
-    return `Cost impact: ${delta > 0 ? '+' : '−'}${(Math.abs(delta)*100).toFixed(2)}% real × 0.3 dampening = ${delta > 0 ? '−' : '+'}${gamePct}% on ${productName} ingredients. Effective cost is ${costChange}.`;
+    return `Cost: ${delta > 0 ? '−' : '+'}${costPct}% (${realPct}% × ${STOCK_COST_DAMPENING} dampening). Demand: ${delta > 0 ? '+' : '−'}${demandPct}% (${realPct}% × ${STOCK_DAMPENING} amplifier). Effective cost is ${costChange}.`;
   }
 
   function tip(): string {
