@@ -9,6 +9,21 @@ const SYMBOLS            = ['AAPL', 'TSLA', 'MCD', 'KO', 'GME'] as const;
 const CACHE_TTL_OPEN     =  55_000; // ms — market open
 const CACHE_TTL_CLOSED   = 300_000; // ms — market closed / after-hours
 
+// ─── Per-stock beta relative to a foreign index ───────────────────────────────
+// When NYSE is closed we use a live foreign index as mood signal and scale
+// it by each stock's "beta" to keep volatility differences meaningful.
+//   KO / MCD  — defensive consumer staples, low beta
+//   AAPL      — large-cap tech, moderate beta
+//   TSLA      — high-growth volatile, high beta
+//   GME       — meme stock, extreme beta
+const STOCK_BETAS: Record<string, number> = {
+  KO:   0.7,
+  MCD:  0.6,
+  AAPL: 1.1,
+  TSLA: 1.8,
+  GME:  2.8,
+};
+
 type PriceMap = Record<string, number>;
 
 /** Market context returned alongside prices for weighted event selection */
@@ -103,6 +118,41 @@ function isNYSEClosed(): { closed: boolean; reason: string } {
   return { closed: false, reason: 'open' };
 }
 
+// ─── Foreign market detection ────────────────────────────────────────────────
+//
+// When NYSE is closed we look for a major market that IS currently trading
+// and use its index as a live mood signal.  This keeps demand swings and
+// event probabilities dynamic even on evenings / weekends.
+//
+// Schedule (all UTC, Mon–Fri only):
+//   00:00 – 02:30   Tokyo morning session  (^N225, JST 09:00-11:30)
+//   02:30 – 03:30   Tokyo lunch break      — no signal
+//   03:30 – 06:30   Tokyo afternoon session (^N225, JST 12:30-15:30)
+//   06:30 – 08:00   All major markets closed — no signal
+//   08:00 – 14:30   London / Europe open   (^FTSE, before NYSE opens)
+//   14:30 – 21:00   NYSE open              — this function won't be called
+//   21:00 – 24:00   All markets closed     — no signal
+
+interface ForeignMarket { symbol: string; name: string }
+
+function getOpenForeignMarket(): ForeignMarket | null {
+  const now     = new Date();
+  const day     = now.getUTCDay();                              // 0 = Sun
+  const minutes = now.getUTCHours() * 60 + now.getUTCMinutes();
+
+  if (day === 0 || day === 6) return null; // weekend — no live signal
+
+  // Tokyo morning + afternoon (skip lunch 2:30-3:30 UTC)
+  if ((minutes < 150) || (minutes >= 210 && minutes < 390)) {
+    return { symbol: '^N225', name: 'Nikkei 225' };
+  }
+  // London/Europe — only before NYSE opens (< 14:30 UTC = 870 min)
+  if (minutes >= 480 && minutes < 870) {
+    return { symbol: '^FTSE', name: 'FTSE 100' };
+  }
+  return null;
+}
+
 // ─── Route handler ────────────────────────────────────────────────────────────
 
 export async function GET() {
@@ -147,10 +197,43 @@ export async function GET() {
       fetchMarketContext(),
     ]);
 
+    // Start with the daily % changes from each US stock
+    let dayChangePcts      = priceResult.dayChangePcts;
+    let effectiveMarketCtx = marketCtx;
+    let foreignMarketName: string | undefined;
+
+    // When NYSE is closed, try to replace with a live foreign index so the
+    // game stays dynamic (yesterday's US delta is static every round)
+    if (closed) {
+      const foreign = getOpenForeignMarket();
+      if (foreign) {
+        try {
+          const foreignMeta = await fetchSymbolMeta(foreign.symbol);
+          const baseDelta   = typeof foreignMeta?.regularMarketChangePercent === 'number'
+            ? foreignMeta.regularMarketChangePercent / 100
+            : null;
+
+          if (baseDelta !== null) {
+            // Scale by per-stock beta so meme stocks swing more than staples
+            dayChangePcts = {};
+            for (const sym of SYMBOLS) {
+              dayChangePcts[sym] = baseDelta * (STOCK_BETAS[sym] ?? 1.0);
+            }
+            // Use the foreign index move as the overall "market mood"
+            effectiveMarketCtx = { spy_delta: baseDelta, vix: marketCtx.vix };
+            foreignMarketName  = foreign.name;
+          }
+        } catch {
+          // Foreign fetch failed — keep US dayChangePcts as fallback
+        }
+      }
+    }
+
     const payload = {
       ...priceResult.prices,
-      dayChangePcts: priceResult.dayChangePcts,
-      market_context: marketCtx,
+      dayChangePcts,
+      market_context:  effectiveMarketCtx,
+      ...(foreignMarketName ? { foreignMarket: foreignMarketName } : {}),
     };
     setCache(payload, closed);
 

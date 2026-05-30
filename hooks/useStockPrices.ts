@@ -15,6 +15,8 @@ type ApiResponse = Prices & {
   market_context?:       { spy_delta: number; vix: number };
   /** Official daily % change per symbol (decimal). Present for both live + mock. */
   dayChangePcts?:        Record<string, number>;
+  /** Human-readable label for which market is driving dayChangePcts when NYSE closed */
+  foreignMarket?:        string;
 };
 
 export function useStockPrices() {
@@ -22,9 +24,10 @@ export function useStockPrices() {
   const [prevPrices,    setPrevPrices]   = useState<Prices>({});
   const [loading,       setLoading]      = useState(true);
   const [error,         setError]        = useState<string | null>(null);
-  const [marketClosed,  setMarketClosed] = useState(false);
-  const [marketContext, setMarketContext] = useState<MarketContext>({ spyDelta: 0, vix: 20 });
-  const [dayChangePcts, setDayChangePcts] = useState<Record<string, number>>({});
+  const [marketClosed,  setMarketClosed]  = useState(false);
+  const [marketContext, setMarketContext]  = useState<MarketContext>({ spyDelta: 0, vix: 20 });
+  const [dayChangePcts, setDayChangePcts]  = useState<Record<string, number>>({});
+  const [foreignMarket, setForeignMarket]  = useState<string | null>(null);
   const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastPricesRef = useRef<Prices>({});
 
@@ -49,6 +52,9 @@ export function useStockPrices() {
       if (data.dayChangePcts) {
         setDayChangePcts(data.dayChangePcts);
       }
+
+      // Which foreign market is driving deltas right now (null = using US data)
+      setForeignMarket(data.foreignMarket ?? null);
 
       // Strip non-price fields
       const newPrices: Prices = {};
@@ -99,5 +105,5 @@ export function useStockPrices() {
     return (curr - prev) / prev;
   }, [dayChangePcts, prices, prevPrices]);
 
-  return { prices, prevPrices, dayChangePcts, loading, error, marketClosed, marketContext, getStockDelta, refetch: fetchPrices };
+  return { prices, prevPrices, dayChangePcts, foreignMarket, loading, error, marketClosed, marketContext, getStockDelta, refetch: fetchPrices };
 }
