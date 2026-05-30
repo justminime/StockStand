@@ -2,10 +2,12 @@ import { NextResponse } from 'next/server';
 
 // No external cache dependency — module-level Map works because
 // Vercel Fluid Compute reuses function instances across requests.
-// TTL: 55 s (intentionally NOT 60 s to avoid round-timer alignment).
+// TTL varies: 55 s during market hours (align below round timer),
+//             5 min when market is closed (prices won't move anyway).
 
-const SYMBOLS   = ['AAPL', 'TSLA', 'MCD', 'KO', 'GME'] as const;
-const CACHE_TTL = 55_000; // milliseconds
+const SYMBOLS            = ['AAPL', 'TSLA', 'MCD', 'KO', 'GME'] as const;
+const CACHE_TTL_OPEN     =  55_000; // ms — market open
+const CACHE_TTL_CLOSED   = 300_000; // ms — market closed / after-hours
 
 type PriceMap = Record<string, number>;
 
@@ -37,8 +39,9 @@ function getCached(): CachedPayload | null {
   return entry.payload;
 }
 
-function setCache(payload: CachedPayload): void {
-  cache.set('prices', { payload, expiresAt: Date.now() + CACHE_TTL });
+function setCache(payload: CachedPayload, closed: boolean): void {
+  const ttl = closed ? CACHE_TTL_CLOSED : CACHE_TTL_OPEN;
+  cache.set('prices', { payload, expiresAt: Date.now() + ttl });
 }
 
 // ─── NYSE market-hours detection ──────────────────────────────────────────────
@@ -113,11 +116,16 @@ export async function GET() {
       const v = fallback.default[sym];
       if (typeof v === 'number') prices[sym] = v;
     }
+    // Realistic mock daily changes — keeps cards/explain lively during dev
+    const dayChangePcts: Record<string, number> = {
+      AAPL: 0.015, TSLA: -0.032, MCD: 0.008, KO: 0.004, GME: 0.11,
+    };
     return NextResponse.json({
       ...prices,
+      dayChangePcts,
       source: 'mock',
       market_closed: false,
-      market_context: { spy_delta: 0, vix: 20 } satisfies MarketContextPayload,
+      market_context: { spy_delta: 0.005, vix: 18 } satisfies MarketContextPayload,
     });
   }
 
@@ -134,13 +142,17 @@ export async function GET() {
 
   // Fetch live prices + market context in parallel
   try {
-    const [prices, marketCtx] = await Promise.all([
+    const [priceResult, marketCtx] = await Promise.all([
       fetchLivePrices([...SYMBOLS]),
       fetchMarketContext(),
     ]);
 
-    const payload = { ...prices, market_context: marketCtx };
-    setCache(payload);
+    const payload = {
+      ...priceResult.prices,
+      dayChangePcts: priceResult.dayChangePcts,
+      market_context: marketCtx,
+    };
+    setCache(payload, closed);
 
     return NextResponse.json({
       ...payload,
@@ -160,6 +172,7 @@ export async function GET() {
     }
     return NextResponse.json({
       ...prices,
+      dayChangePcts: {},
       source: 'fallback',
       market_closed: closed,
       market_closed_reason: reason,
@@ -170,19 +183,33 @@ export async function GET() {
 
 // ─── Live price fetching ──────────────────────────────────────────────────────
 
-async function fetchLivePrices(symbols: string[]): Promise<PriceMap> {
+interface SymbolResult {
+  price:        number | null;
+  dayChangePct: number | null; // regularMarketChangePercent / 100 (decimal)
+}
+
+interface LivePriceResult {
+  prices:       PriceMap;
+  dayChangePcts: Record<string, number>; // always present, may be partial
+}
+
+async function fetchLivePrices(symbols: string[]): Promise<LivePriceResult> {
   const results = await Promise.allSettled(
     symbols.map(sym => fetchOneSymbol(sym))
   );
 
-  const prices: PriceMap = {};
+  const prices:       PriceMap                = {};
+  const dayChangePcts: Record<string, number> = {};
   let failCount = 0;
 
   for (let i = 0; i < results.length; i++) {
     const result = results[i];
     const sym    = symbols[i];
-    if (result.status === 'fulfilled' && result.value !== null) {
-      prices[sym] = result.value;
+    if (result.status === 'fulfilled' && result.value.price !== null) {
+      prices[sym] = result.value.price;
+      if (result.value.dayChangePct !== null) {
+        dayChangePcts[sym] = result.value.dayChangePct;
+      }
     } else {
       failCount++;
     }
@@ -193,22 +220,30 @@ async function fetchLivePrices(symbols: string[]): Promise<PriceMap> {
     throw new Error(`Too many symbol fetch failures: ${failCount}/${symbols.length}`);
   }
 
-  return prices;
+  return { prices, dayChangePcts };
 }
 
-async function fetchOneSymbol(symbol: string): Promise<number | null> {
+async function fetchOneSymbol(symbol: string): Promise<SymbolResult> {
   const url = `https://query2.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&range=1d`;
   try {
     const controller = new AbortController();
     const timeoutId  = setTimeout(() => controller.abort(), 3000);
     const res = await fetch(url, { signal: controller.signal });
     clearTimeout(timeoutId);
-    if (!res.ok) return null;
-    const data = await res.json() as { chart?: { result?: Array<{ meta?: { regularMarketPrice?: number } }> } };
-    const price = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-    return typeof price === 'number' ? price : null;
+    if (!res.ok) return { price: null, dayChangePct: null };
+    const data = await res.json() as {
+      chart?: { result?: Array<{ meta?: {
+        regularMarketPrice?:         number;
+        regularMarketChangePercent?: number;
+      } }> }
+    };
+    const meta   = data?.chart?.result?.[0]?.meta;
+    const price  = typeof meta?.regularMarketPrice         === 'number' ? meta.regularMarketPrice  : null;
+    // Yahoo returns e.g. 2.34 for +2.34% — convert to decimal
+    const chgPct = typeof meta?.regularMarketChangePercent === 'number' ? meta.regularMarketChangePercent / 100 : null;
+    return { price, dayChangePct: chgPct };
   } catch {
-    return null;
+    return { price: null, dayChangePct: null };
   }
 }
 

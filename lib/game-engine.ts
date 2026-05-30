@@ -247,13 +247,24 @@ export function simulateRound(
   state:         GameState,
   currentPrices: Record<string, number>,
   marketCtx?:    MarketContext | null,
+  /**
+   * Official daily % changes from the API (regularMarketChangePercent / 100).
+   * When provided they are used as stock deltas so the game reflects real-world
+   * movement even when the market is closed (yesterday's move stays in play).
+   * Falls back to round-to-round price diff when absent.
+   */
+  dayChangePcts?: Record<string, number>,
 ): { newState: GameState; roundSummary: RoundSummary } {
-  // --- Stock deltas ---
+  // --- Stock deltas: prefer official daily change, fall back to round-to-round ---
   const stockDeltas: Record<string, number> = {};
   for (const symbol of Object.keys(currentPrices)) {
-    const curr = currentPrices[symbol];
-    const prev = state.stockPrices[symbol];
-    stockDeltas[symbol] = prev && prev !== 0 ? (curr - prev) / prev : 0;
+    if (dayChangePcts && typeof dayChangePcts[symbol] === 'number') {
+      stockDeltas[symbol] = dayChangePcts[symbol];
+    } else {
+      const curr = currentPrices[symbol];
+      const prev = state.stockPrices[symbol];
+      stockDeltas[symbol] = prev && prev !== 0 ? (curr - prev) / prev : 0;
+    }
   }
 
   // --- Per-product simulation ---
