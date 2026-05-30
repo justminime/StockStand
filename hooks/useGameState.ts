@@ -33,9 +33,13 @@ export function useGameState() {
   }, [state, isLoaded]);
 
   const runRound = useCallback(
-    (currentPrices: Record<string, number>, marketCtx?: MarketContext | null) => {
+    (
+      currentPrices: Record<string, number>,
+      marketCtx?:    MarketContext | null,
+      dayChangePcts?: Record<string, number>,
+    ) => {
       setState(prev => {
-        const { newState } = simulateRound(prev, currentPrices, marketCtx);
+        const { newState } = simulateRound(prev, currentPrices, marketCtx, dayChangePcts);
         return newState;
       });
     },

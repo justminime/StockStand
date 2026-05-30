@@ -68,6 +68,7 @@ export default function GameBoard() {
   const {
     prices,
     prevPrices,
+    dayChangePcts,
     loading:       pricesLoading,
     error:         pricesError,
     marketClosed,
@@ -196,8 +197,9 @@ export default function GameBoard() {
     setPaused(true);
 
     const currentPrices = Object.keys(prices).length > 0 ? { ...prices } : { ...FALLBACK };
-    runRound(currentPrices, marketContext);
-  }, [prices, marketContext, runRound]);
+    // Pass official daily % changes so closed-market rounds still feel alive
+    runRound(currentPrices, marketContext, dayChangePcts);
+  }, [prices, marketContext, dayChangePcts, runRound]);
 
   const handleEndSession = useCallback(() => {
     setPaused(true);
@@ -311,7 +313,7 @@ export default function GameBoard() {
       {showClosedBanner && (
         <div className={styles.closedBanner} role="status">
           <span aria-hidden="true">🔔</span>
-          <span>NYSE is closed right now — prices are from the last trading session.</span>
+          <span>NYSE is closed — using yesterday&apos;s price moves so the game stays realistic. Play on! 🌙</span>
           <button
             className={styles.closedDismiss}
             onClick={() => setClosedDismissed(true)}

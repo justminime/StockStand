@@ -13,6 +13,8 @@ type ApiResponse = Prices & {
   market_closed?:        boolean;
   market_closed_reason?: string;
   market_context?:       { spy_delta: number; vix: number };
+  /** Official daily % change per symbol (decimal). Present for both live + mock. */
+  dayChangePcts?:        Record<string, number>;
 };
 
 export function useStockPrices() {
@@ -22,6 +24,7 @@ export function useStockPrices() {
   const [error,         setError]        = useState<string | null>(null);
   const [marketClosed,  setMarketClosed] = useState(false);
   const [marketContext, setMarketContext] = useState<MarketContext>({ spyDelta: 0, vix: 20 });
+  const [dayChangePcts, setDayChangePcts] = useState<Record<string, number>>({});
   const intervalRef   = useRef<ReturnType<typeof setInterval> | null>(null);
   const lastPricesRef = useRef<Prices>({});
 
@@ -40,6 +43,11 @@ export function useStockPrices() {
           spyDelta: data.market_context.spy_delta,
           vix:      data.market_context.vix,
         });
+      }
+
+      // Official daily % changes — used as stock deltas (works even when market closed)
+      if (data.dayChangePcts) {
+        setDayChangePcts(data.dayChangePcts);
       }
 
       // Strip non-price fields
@@ -76,12 +84,20 @@ export function useStockPrices() {
     };
   }, [fetchPrices]);
 
+  /**
+   * Returns the stock delta for UI display and game mechanics.
+   * Prefers the official daily % change from Yahoo (`regularMarketChangePercent`)
+   * which works correctly even when the market is closed (returns yesterday's move).
+   * Falls back to poll-to-poll delta if dayChangePct is missing.
+   */
   const getStockDelta = useCallback((symbol: string): number => {
+    if (typeof dayChangePcts[symbol] === 'number') return dayChangePcts[symbol];
+    // Fallback: poll-to-poll difference (less reliable, can be 0 after-hours)
     const curr = prices[symbol];
     const prev = prevPrices[symbol];
     if (!curr || !prev || prev === 0) return 0;
     return (curr - prev) / prev;
-  }, [prices, prevPrices]);
+  }, [dayChangePcts, prices, prevPrices]);
 
-  return { prices, prevPrices, loading, error, marketClosed, marketContext, getStockDelta, refetch: fetchPrices };
+  return { prices, prevPrices, dayChangePcts, loading, error, marketClosed, marketContext, getStockDelta, refetch: fetchPrices };
 }
